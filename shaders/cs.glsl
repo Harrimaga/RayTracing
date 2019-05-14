@@ -71,9 +71,6 @@ void IntersectSphere(in vec4 s, in Ray ray, out vec3 intersectionPoint, out bool
 	intersectionPoint = vec3(0, 0, 0);
 	success = false;
 	return;
-	
-
-
 }
 
 void main() 
@@ -109,7 +106,7 @@ void main()
 
 				bool intersectOther;
 
-				for(int k=0;k<sphere.length();k++)
+				for(int k=0;k<sphere.length;k++)
 				{
 					vec3 notimp;
 					
@@ -125,7 +122,6 @@ void main()
 				{
 					Color[offset] += light[j].color * sphere[i].color;
 				}
-
 			}
 		}
 	}
