@@ -9,9 +9,9 @@ namespace INFOGR2019Tmpl8
 {
     public class Camera
     {
-        Vector3 position, direction;
-        Vector3[] screen;
-        Vector3 center;
+        public Vector3 position, direction;
+        public Vector3[] screen;
+        public Vector3 center;
 
         public Camera(Vector3 position, Vector3 direction)
         {

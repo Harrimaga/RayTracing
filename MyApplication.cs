@@ -26,6 +26,8 @@ namespace Template
             ssbo_col = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ssbo_col);
             GL.BufferData<float>(BufferTarget.ShaderStorageBuffer, colors.Length * 4, colors, BufferUsageHint.DynamicCopy);
+
+            camera = new Camera(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
 		}
 		// tick: renders one frame
 		public void Tick()
@@ -90,6 +92,17 @@ namespace Template
                 blue = 0;
             }
             return (red << 16) + (green << 8) + blue;
+        }
+
+        public void Render()
+        {
+            for (int y = 0; y < 512; y++)
+            {
+                for (int x = 0; x < 512; x++)
+                {
+                    // Shoot ray through every point on the screen
+                }
+            }
         }
 
     }
