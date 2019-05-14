@@ -16,7 +16,7 @@ namespace Template
 		// initialize
 		public void Init()
 		{
-            colors = new float[screen.width * screen.height * 3];
+            colors = new float[screen.width * screen.height * 4];
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
             GL.LinkProgram(prog);
@@ -40,7 +40,7 @@ namespace Template
                 for (int j = 0; j < screen.height; j++)
                 {
                     int index = i + j * screen.width;
-                    screen.pixels[index] = MixColor((int)(colors[index * 3] * 255), (int)(colors[index * 3 + 1] * 255), (int)(colors[index * 3 + 2] * 255));
+                    screen.pixels[index] = MixColor((int)(colors[index * 4] * 255), (int)(colors[index * 4 + 1] * 255), (int)(colors[index * 4 + 2] * 255));
                 }
             }
 		}
