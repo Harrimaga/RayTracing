@@ -13,3 +13,30 @@ void main()
 	uint offset = storePos.y * gl_WorkGroupSize.x * gl_NumWorkGroups.x + storePos.x;
 	Position[offset] = vec3(storePos.x/gWidth, storePos.y/gHeight, (storePos.x+storePos.y-2)/(gWidth+gHeight)); 	
 }
+
+struct Ray 
+{
+	vec3 origin;
+	vec3 direction;
+	float dis;
+}
+
+bool IntersectSphere(vec4 sphere, Ray ray, out vec3 intersectionPoint)
+{
+	vec3 c = sphere.xyz - ray.origin;
+	float t = c * ray.direction;
+	vec3 q = c - t * ray.direction;
+	float p2 = q * q;
+
+	if (p2 > sphere.w * sphere.w) 
+	{
+		intersectionPoint = vec3(0, 0, 0);
+		return false;
+	}
+
+	t -= (float)sqrt(sphere.w * sphere.w - p2) 
+	{
+		intersectionPoint = ray.origin + t * ray.direction;
+		return true;
+	}
+}
