@@ -120,7 +120,5 @@ namespace Template
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ssbo);
             GL.BufferData<float>(BufferTarget.ShaderStorageBuffer, data.Length * 4, data, BufferUsageHint.DynamicCopy);
         }
-
-
     }
 }
