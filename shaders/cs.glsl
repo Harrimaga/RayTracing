@@ -9,8 +9,27 @@ struct Sphere
 	vec4 color;
 };
 
+struct Camera
+{
+	vec3 camPos;
+	vec3 camDir;
+	vec3 screenCenter;
+	vec3 screen[3];
+};
+
+struct Ray 
+{
+	vec3 origin;
+	vec3 direction;
+	float dis;
+};
+
 layout(std430, binding=1) readonly buffer spheres{
     Sphere sphere[];
+};
+
+layout(std140) uniform camera_data {
+	Camera camera;
 };
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -28,20 +47,6 @@ void main()
 		}
 	}
 }
-
-struct Camera
-{
-	vec3 camPos;
-	vec3 camDir;
-	vec3 screen[];
-};
-
-struct Ray 
-{
-	vec3 origin;
-	vec3 direction;
-	float dis;
-};
 
 void IntersectSphere(in vec4 s, in Ray ray, out vec3 intersectionPoint, out bool success)
 {
