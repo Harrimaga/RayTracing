@@ -20,11 +20,15 @@ namespace Template
 		public void Init()
 		{
             colors = new float[screen.width * screen.height * 4];
-            spheres = new float[4];
+            spheres = new float[8];
             spheres[0] = 2f;
             spheres[1] = 2f;
             spheres[2] = 0f;
             spheres[3] = 0.5f;
+            spheres[4] = 1.5f;
+            spheres[5] = 0f;
+            spheres[6] = 0f;
+            spheres[7] = 1.5f;
 
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);

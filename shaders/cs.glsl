@@ -1,10 +1,16 @@
 #version 430
 layout(std430, binding=0) writeonly buffer Pos{
-    vec3 Position[];
+    vec4 Position[];
+};
+
+struct Sphere
+{
+	vec4 pos;
+	vec4 color;
 };
 
 layout(std430, binding=1) readonly buffer spheres{
-    vec4 sphere[];
+    Sphere sphere[];
 };
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -15,10 +21,10 @@ void main()
 	float gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	float gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
 	uint offset = storePos.y * gl_WorkGroupSize.x * gl_NumWorkGroups.x + storePos.x;
-	Position[offset] = vec3(storePos.x/gWidth, storePos.y/gHeight, (storePos.x+storePos.y-2)/(gWidth+gHeight));
+	Position[offset] = vec4(storePos.x/gWidth, storePos.y/gHeight, (storePos.x+storePos.y-2)/(gWidth+gHeight), 0);
 	for(int i=0;i<sphere.length();i++){
-		if(sphere[i].x == storePos.x && sphere[i].y == storePos.y) {
-			Position[offset] = vec3(1, 1, 1);
+		if(sphere[i].pos.x == storePos.x && sphere[i].pos.y == storePos.y) {
+			Position[offset] = sphere[i].color;
 		}
 	}
 }
