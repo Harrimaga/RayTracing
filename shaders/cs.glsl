@@ -3,7 +3,7 @@ layout(std430, binding=0) writeonly buffer Pos{
     vec3 Position[];
 };
 
-layout(std430, binding=1) writeonly buffer spheres{
+layout(std430, binding=1) readonly buffer spheres{
     vec4 sphere[];
 };
 
@@ -28,24 +28,24 @@ struct Ray
 	vec3 origin;
 	vec3 direction;
 	float dis;
-}
+};
 
-bool IntersectSphere(vec4 sphere, Ray ray, out vec3 intersectionPoint)
+void IntersectSphere(in vec4 s, in Ray ray, out vec3 intersectionPoint, out bool success)
 {
-	vec3 c = sphere.xyz - ray.origin;
-	float t = c * ray.direction;
+	vec3 c = s.xyz - ray.origin;
+	float t = dot(c, ray.direction);
 	vec3 q = c - t * ray.direction;
-	float p2 = q * q;
+	float p2 = dot(q, q);
 
-	if (p2 > sphere.w * sphere.w) 
+	if (p2 > s.w * s.w) 
 	{
 		intersectionPoint = vec3(0, 0, 0);
-		return false;
+		success = false;
+		return;
 	}
 
-	t -= (float)sqrt(sphere.w * sphere.w - p2) 
-	{
-		intersectionPoint = ray.origin + t * ray.direction;
-		return true;
-	}
+	t -= sqrt(s.w * s.w - p2);
+	intersectionPoint = ray.origin + t * ray.direction;
+	success = true;
+	return;
 }
