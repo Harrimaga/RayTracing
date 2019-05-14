@@ -100,7 +100,7 @@ namespace Template
             {
                 for (int x = 0; x < 512; x++)
                 {
-                    // Shoot ray through every point on the screen
+                    // TODO: Shoot ray through every point on the screen
                 }
             }
         }
