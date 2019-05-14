@@ -23,6 +23,13 @@ void main()
 	}
 }
 
+struct Camera
+{
+	vec3 camPos;
+	vec3 camDir;
+	vec3 screen[];
+};
+
 struct Ray 
 {
 	vec3 origin;
