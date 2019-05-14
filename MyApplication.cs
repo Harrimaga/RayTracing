@@ -16,7 +16,7 @@ namespace Template
 		// initialize
 		public void Init()
 		{
-            colors = new float[256 * 256 * 3];
+            colors = new float[screen.width * screen.height * 3];
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
             GL.LinkProgram(prog);
@@ -30,16 +30,16 @@ namespace Template
 			screen.Clear( 0 );
             GL.UseProgram(prog);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ssbo_col);
-            GL.DispatchCompute(256/8, 256/8, 1);
+            GL.DispatchCompute(screen.width/8, screen.height/8, 1);
             GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, 0);
 
             ReadFromBuffer(ssbo_col, colors);
-            for(int i = 0; i < 256; i++)
+            for(int i = 0; i < screen.width; i++)
             {
-                for (int j = 0; j < 256; j++)
+                for (int j = 0; j < screen.height; j++)
                 {
-                    int index = i + j * 256;
+                    int index = i + j * screen.width;
                     screen.pixels[index] = MixColor((int)(colors[index * 3] * 255), (int)(colors[index * 3 + 1] * 255), (int)(colors[index * 3 + 2] * 255));
                 }
             }
