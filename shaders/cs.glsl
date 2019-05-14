@@ -99,14 +99,14 @@ void main()
 			Color[offset] = vec4(0, 0, 0, 0);
 
 			// Shoot shadow rays
-			for(int j=0;j<light.length;j++)
+			for(int j=0;j<light.length();j++)
 			{
 				vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * 0.0001f;
 				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
 
 				bool intersectOther;
 
-				for(int k=0;k<sphere.length;k++)
+				for(int k=0;k<sphere.length();k++)
 				{
 					vec3 notimp;
 					
