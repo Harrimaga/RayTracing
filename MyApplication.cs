@@ -74,6 +74,18 @@ namespace Template
             {
                 green = 255;
             }
+            if(red < 0)
+            {
+                red = 0;
+            }
+            if(green < 0)
+            {
+                green = 0;
+            }
+            if(blue < 0)
+            {
+                blue = 0;
+            }
             return (red << 16) + (green << 8) + blue;
         }
 
