@@ -1,6 +1,6 @@
 #version 430
 layout(std430, binding=0) writeonly buffer Pos{
-    vec4 Position[];
+    vec4 Color[];
 };
 
 struct Sphere
@@ -34,20 +34,6 @@ layout(std140) uniform camera_data {
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-void main() 
-{
-	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
-	float gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
-	float gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
-	uint offset = storePos.y * gl_WorkGroupSize.x * gl_NumWorkGroups.x + storePos.x;
-	Position[offset] = vec4(storePos.x/gWidth, storePos.y/gHeight, (storePos.x+storePos.y-2)/(gWidth+gHeight), 0);
-	for(int i=0;i<sphere.length();i++){
-		if(sphere[i].pos.x == storePos.x && sphere[i].pos.y == storePos.y) {
-			Position[offset] = sphere[i].color;
-		}
-	}
-}
-
 void IntersectSphere(in vec4 s, in Ray ray, out vec3 intersectionPoint, out bool success)
 {
 	vec3 c = s.xyz - ray.origin;
@@ -66,4 +52,32 @@ void IntersectSphere(in vec4 s, in Ray ray, out vec3 intersectionPoint, out bool
 	intersectionPoint = ray.origin + t * ray.direction;
 	success = true;
 	return;
+}
+
+void main() 
+{
+	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
+	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
+	uint offset = storePos.y * gl_WorkGroupSize.x * gl_NumWorkGroups.x + storePos.x;
+
+
+	//(center + new Vector3(-1, -1, 0))
+    //(center + new Vector3( 1, -1, 0))
+    //(center + new Vector3(-1,  1, 0))
+	vec3 pixel = vec3(camera.screen[0].x+(camera.screen[1].x-camera.screen[0].x)*storePos.x/gWidth, camera.screen[0].y+(camera.screen[1].y-camera.screen[0].y)*storePos.y/gWidth, camera.screen[0].z);
+
+	Ray primaryRay = Ray(camera.camPos, normalize(pixel - camera.camPos), 999999);
+
+	for(int i=0;i<sphere.length();i++)
+	{
+		bool suc;
+		vec3 rayCastHit;
+		IntersectSphere(sphere[i].pos, primaryRay, rayCastHit, suc);
+
+		if (suc) 
+		{
+			Color[offset] = sphere[i].color;
+		}
+	}
 }

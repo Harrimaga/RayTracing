@@ -19,7 +19,7 @@ namespace Template
 		// initialize
 		public void Init()
 		{
-            camera = new Camera(new Vector3(0, 0, -2), new Vector3(0, 0, 1));
+            camera = new Camera(new Vector3(0, 0, -15), new Vector3(0, 0, 1));
 
             colors = new float[screen.width * screen.height * 4];
             spheres = new float[8];
