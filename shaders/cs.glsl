@@ -101,7 +101,7 @@ void main()
 			// Shoot shadow rays
 			for(int j=0;j<light.length();j++)
 			{
-				vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * 0.0001f;
+				vec3 shadowOrigin = rayCastHit + normalize(sphere[i].pos.xyz - rayCastHit) * 0.0001f;
 				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
 
 				bool intersectOther;
