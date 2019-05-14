@@ -14,7 +14,7 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, csID, ssbo_col, ssbo_sphere, ubo_camera;
+        public int prog, csID, ssbo_col, ssbo_sphere, u_camPos, u_scTL, u_scTR, u_scDL;
         public float[] colors, spheres, cam;
 		// initialize
 		public void Init()
@@ -32,34 +32,16 @@ namespace Template
             spheres[6] = 0f;
             spheres[7] = 1f;
 
-            cam = new float[18]
-            {
-                camera.position.X,
-                camera.position.Y,
-                camera.position.Z,
-                camera.direction.X,
-                camera.direction.Y,
-                camera.direction.Z,
-                camera.center.X,
-                camera.center.Y,
-                camera.center.Z,
-                camera.screen[0].X,
-                camera.screen[0].Y,
-                camera.screen[0].Z,
-                camera.screen[1].X,
-                camera.screen[1].Y,
-                camera.screen[1].Z,
-                camera.screen[2].X,
-                camera.screen[2].Y,
-                camera.screen[2].Z
-            };
-
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
             GL.LinkProgram(prog);
+            u_camPos = GL.GetUniformLocation(prog, "camPos");
+            u_scTL = GL.GetUniformLocation(prog, "screenTL");
+            u_scTR = GL.GetUniformLocation(prog, "screenTR");
+            u_scDL = GL.GetUniformLocation(prog, "screenDL");
+
             Createssbo(ref ssbo_col, colors);
             Createssbo(ref ssbo_sphere, spheres);
-            Createubo(ref ubo_camera, cam);
 		}
 		// tick: renders one frame
 		public void Tick()
@@ -69,13 +51,16 @@ namespace Template
 
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ssbo_col);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, ssbo_sphere);
-            GL.BindBuffer(BufferTarget.UniformBuffer, ubo_camera);
+
+            GL.Uniform3(u_camPos, ref camera.position);
+            GL.Uniform3(u_scTL, ref camera.screen[0]);
+            GL.Uniform3(u_scTR, ref camera.screen[1]);
+            GL.Uniform3(u_scDL, ref camera.screen[2]);
 
             GL.DispatchCompute(screen.width/8, screen.height/8, 1);
             GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, 0);
-            GL.BindBuffer(BufferTarget.UniformBuffer, 0);
 
             ReadFromBuffer(ssbo_col, colors);
             for(int i = 0; i < screen.width; i++)
@@ -150,11 +135,5 @@ namespace Template
             GL.BufferData<float>(BufferTarget.ShaderStorageBuffer, data.Length * 4, data, BufferUsageHint.DynamicCopy);
         }
 
-        public void Createubo(ref int ubo, float[] data)
-        {
-            ubo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.UniformBuffer, ubo);
-            GL.BufferData<float>(BufferTarget.UniformBuffer, data.Length * 4, data, BufferUsageHint.DynamicCopy);
-        }
     }
 }
