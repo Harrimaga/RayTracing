@@ -22,8 +22,6 @@ void main()
 		}
 	}
 }
-	Position[offset] = vec3(storePos.x/gWidth, storePos.y/gHeight, (storePos.x+storePos.y-2)/(gWidth+gHeight)); 	
-}
 
 struct Ray 
 {
