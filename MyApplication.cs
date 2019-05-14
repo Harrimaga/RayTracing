@@ -14,23 +14,51 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, csID, ssbo_col, ssbo_sphere, u_camPos, u_scTL, u_scTR, u_scDL;
-        public float[] colors, spheres, cam;
+        public int prog, csID, ssbo_col, ssbo_sphere, ssbo_light, u_camPos, u_scTL, u_scTR, u_scDL;
+        public float[] colors, spheres, cam, lights;
 		// initialize
 		public void Init()
 		{
-            camera = new Camera(new Vector3(0, 0, -15), new Vector3(0, 0, 1));
+            camera = new Camera(new Vector3(0, 0, -5), new Vector3(0, 0, 1), screen);
 
             colors = new float[screen.width * screen.height * 4];
-            spheres = new float[8];
+            spheres = new float[16];
+            // Sphere 1: Red
+            // Position
             spheres[0] = 0f;
             spheres[1] = 0f;
             spheres[2] = 0f;
+            //Radius
             spheres[3] = 0.5f;
-            spheres[4] = 1f;
-            spheres[5] = 0f;
-            spheres[6] = 0f;
-            spheres[7] = 1f;
+            //Colour
+            spheres[4] = 1f; //R
+            spheres[5] = 0f; //G
+            spheres[6] = 0f; //B
+            spheres[7] = 1f; //A
+
+            // Sphere 2: Green
+            spheres[8] = 1f;
+            spheres[9] = 1f;
+            spheres[10] = 0f;
+            spheres[11] = 0.5f;
+            spheres[12] = 0f;
+            spheres[13] = 1f;
+            spheres[14] = 0f;
+            spheres[15] = 1f;
+
+
+            lights = new float[8];
+            // Light 1
+            // Position
+            lights[0] = 2f;
+            lights[1] = 2f;
+            lights[2] = 0f;
+            lights[3] = 0f;
+            // Intensity (colour)
+            lights[4] = 1f;
+            lights[5] = 1f;
+            lights[6] = 1f;
+            lights[7] = 1f;
 
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
@@ -42,6 +70,7 @@ namespace Template
 
             Createssbo(ref ssbo_col, colors);
             Createssbo(ref ssbo_sphere, spheres);
+            Createssbo(ref ssbo_light, lights);
 		}
 		// tick: renders one frame
 		public void Tick()
@@ -51,6 +80,7 @@ namespace Template
 
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ssbo_col);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, ssbo_sphere);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, ssbo_light);
 
             GL.Uniform3(u_camPos, ref camera.position);
             GL.Uniform3(u_scTL, ref camera.screen[0]);
@@ -61,6 +91,7 @@ namespace Template
             GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, 0);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, 0);
 
             ReadFromBuffer(ssbo_col, colors);
             for(int i = 0; i < screen.width; i++)
