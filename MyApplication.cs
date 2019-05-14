@@ -14,18 +14,23 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, csID, ssbo_col;
-        public float[] colors;
+        public int prog, csID, ssbo_col, ssbo_sphere;
+        public float[] colors, spheres;
 		// initialize
 		public void Init()
 		{
             colors = new float[screen.width * screen.height * 4];
+            spheres = new float[4];
+            spheres[0] = 2f;
+            spheres[1] = 2f;
+            spheres[2] = 0f;
+            spheres[3] = 0.5f;
+
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
             GL.LinkProgram(prog);
-            ssbo_col = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ssbo_col);
-            GL.BufferData<float>(BufferTarget.ShaderStorageBuffer, colors.Length * 4, colors, BufferUsageHint.DynamicCopy);
+            Createssbo(ref ssbo_col, colors);
+            Createssbo(ref ssbo_sphere, spheres);
 
             camera = new Camera(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
 		}
@@ -34,10 +39,14 @@ namespace Template
 		{
 			screen.Clear( 0 );
             GL.UseProgram(prog);
+
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ssbo_col);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, ssbo_sphere);
+
             GL.DispatchCompute(screen.width/8, screen.height/8, 1);
             GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, 0);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, 0);
 
             ReadFromBuffer(ssbo_col, colors);
             for(int i = 0; i < screen.width; i++)
@@ -104,6 +113,14 @@ namespace Template
                 }
             }
         }
+
+        public void Createssbo(ref int ssbo, float[] data)
+        {
+            ssbo = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ssbo);
+            GL.BufferData<float>(BufferTarget.ShaderStorageBuffer, data.Length * 4, data, BufferUsageHint.DynamicCopy);
+        }
+
 
     }
 }
