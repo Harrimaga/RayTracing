@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using INFOGR2019Tmpl8;
+using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
 namespace Template
@@ -11,6 +13,7 @@ namespace Template
 	{
 		// member variables
 		public Surface screen;
+        public Camera camera;
         public int prog, csID, ssbo_col;
         public float[] colors;
 		// initialize
