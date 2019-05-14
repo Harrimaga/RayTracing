@@ -21,14 +21,14 @@ namespace Template
 		{
             colors = new float[screen.width * screen.height * 4];
             spheres = new float[8];
-            spheres[0] = 2f;
-            spheres[1] = 2f;
+            spheres[0] = 0f;
+            spheres[1] = 0f;
             spheres[2] = 0f;
             spheres[3] = 0.5f;
-            spheres[4] = 1.5f;
+            spheres[4] = 1f;
             spheres[5] = 0f;
             spheres[6] = 0f;
-            spheres[7] = 1.5f;
+            spheres[7] = 1f;
 
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
@@ -36,7 +36,7 @@ namespace Template
             Createssbo(ref ssbo_col, colors);
             Createssbo(ref ssbo_sphere, spheres);
 
-            camera = new Camera(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
+            camera = new Camera(new Vector3(0, 0, -2), new Vector3(0, 0, 1));
 		}
 		// tick: renders one frame
 		public void Tick()
