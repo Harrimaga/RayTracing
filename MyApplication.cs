@@ -27,7 +27,7 @@ namespace Template
             // Position
             spheres[0] = 0f;
             spheres[1] = 0f;
-            spheres[2] = 2f;
+            spheres[2] = 1.5f;
             //Radius
             spheres[3] = 1f;
             //Colour
@@ -41,24 +41,34 @@ namespace Template
             spheres[9] = 1f;
             spheres[10] = 0f;
             spheres[11] = 0.5f;
-            spheres[12] = 0f;
+            spheres[12] = 1f;
             spheres[13] = 1f;
-            spheres[14] = 0f;
+            spheres[14] = 1f;
             spheres[15] = 1f;
 
 
-            lights = new float[8];
+            lights = new float[16];
             // Light 1
             // Position
             lights[0] = 2f;
             lights[1] = 2f;
-            lights[2] = 0f;
+            lights[2] = -2f;
             lights[3] = 0f;
             // Intensity (colour)
             lights[4] = 1f;
-            lights[5] = 1f;
-            lights[6] = 1f;
-            lights[7] = 1f;
+            lights[5] = 0.75f;
+            lights[6] = 0.75f;
+            lights[7] = 0.75f;
+            // Position
+            lights[8] = 0f;
+            lights[9] = 2f;
+            lights[10] = 0f;
+            lights[11] = 0f;
+            // Intensity (colour)
+            lights[12] = 0.5f;
+            lights[13] = 0.5f;
+            lights[14] = 1f;
+            lights[15] = 1f;
 
             prog = GL.CreateProgram();
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
