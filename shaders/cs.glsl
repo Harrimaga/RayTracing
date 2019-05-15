@@ -180,6 +180,6 @@ void main()
 			}
 		}
 	}
-	//imageStore(img, storePos, vec4(Color[offset].xyz, 1));
-	imageStore(img, storePos, vec4(1, 1, 1, 1));
+	imageStore(img, storePos, vec4(Color[offset].xyz, 1));
+	//imageStore(img, storePos, vec4(1, 1, 1, 1));
 }
