@@ -72,18 +72,16 @@ namespace Template
             lights[15] = 1f;
 
 
-            planes = new float[12];
+            planes = new float[10];
             // Plane 1
             // Center
             planes[0] = 0f;
             planes[1] = -2f;
             planes[2] = 0f;
-            planes[2] = 0f;
             // Normal
             planes[3] = 0f;
             planes[4] = 1f;
             planes[5] = 0f;
-            planes[2] = 0f;
             // Colour
             planes[6] = 1f;
             planes[7] = 1f;
