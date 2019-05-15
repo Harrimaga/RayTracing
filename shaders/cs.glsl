@@ -122,7 +122,7 @@ void main()
 				if (!intersectOther)
 				{
 					vec3 norm = normalize(rayCastHit-sphere[i].pos.xyz);
-					Color[offset] += light[j].color * sphere[i].color * dot(norm, light[j].pos.xyz)/(shadowRay.dis*shadowRay.dis);
+					Color[offset] += light[j].color * sphere[i].color * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
 				}
 			}
 		}
