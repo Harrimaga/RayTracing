@@ -1,5 +1,5 @@
 #version 430
-layout(std430, binding=0) writeonly buffer Pos{
+layout(std430, binding=0) buffer Pos{
     vec4 Color[];
 };
 
@@ -88,6 +88,7 @@ void main()
 
 	Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
 
+	Color[offset] = vec4(0, 0, 0, 0);
 	for(int i=0;i<sphere.length();i++)
 	{
 		bool suc;
@@ -96,12 +97,12 @@ void main()
 
 		if (suc) 
 		{
-			Color[offset] = vec4(0, 0, 0, 0);
+			
 
 			// Shoot shadow rays
 			for(int j=0;j<light.length();j++)
 			{
-				vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * 0.0001f;
+				vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
 				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
 
 				bool intersectOther;
@@ -120,7 +121,8 @@ void main()
 
 				if (!intersectOther)
 				{
-					Color[offset] += light[j].color * sphere[i].color;
+					vec3 norm = normalize(rayCastHit-sphere[i].pos.xyz);
+					Color[offset] += light[j].color * sphere[i].color * dot(norm, light[j].pos.xyz)/(shadowRay.dis*shadowRay.dis);
 				}
 			}
 		}

@@ -19,7 +19,7 @@ namespace Template
 		// initialize
 		public void Init()
 		{
-            camera = new Camera(new Vector3(0, 0, -5), new Vector3(0, 0, 1), screen);
+            camera = new Camera(new Vector3(0, 0, -3), new Vector3(0, 0, 1), screen);
 
             colors = new float[screen.width * screen.height * 4];
             spheres = new float[16];
@@ -27,9 +27,9 @@ namespace Template
             // Position
             spheres[0] = 0f;
             spheres[1] = 0f;
-            spheres[2] = 0f;
+            spheres[2] = 2f;
             //Radius
-            spheres[3] = 0.5f;
+            spheres[3] = 1f;
             //Colour
             spheres[4] = 1f; //R
             spheres[5] = 0f; //G
