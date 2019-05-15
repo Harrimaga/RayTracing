@@ -121,7 +121,7 @@ void main()
 
 	Color[offset] = vec4(0, 0, 0, 1);
 	vec4 hitColor;
-	Sphere sHit;
+	vec3 hitPos;
 	bool succ = false;
 	vec3 rayCastHit;
 	for(int i=0;i<sphere.length();i++)
@@ -154,29 +154,32 @@ void main()
 		}
 	}
 	// Shoot shadow rays
-	for(int j=0;j<light.length();j++)
-	{
-		vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
-		Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
-		bool intersectOther;
-
-		for(int k=0;k<sphere.length();k++)
+	if(true) {
+		for(int j=0;j<light.length();j++)
 		{
-			vec3 notimp;
-					
-			IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+			vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
+			Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
+			bool intersectOther;
 
-			if (intersectOther)
+			for(int k=0;k<sphere.length();k++)
 			{
-				break;
+				vec3 notimp;
+						
+				IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+
+				if (intersectOther)
+				{
+					break;
+				}
+			}
+
+			if (!intersectOther)
+			{
+				vec3 norm = normalize(rayCastHit-hitPos.xyz);
+				Color[offset] += light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
 			}
 		}
-
-		if (!intersectOther)
-		{
-			vec3 norm = normalize(rayCastHit-hitPos.xyz);
-			Color[offset] += light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
-		}
 	}
-	imageStore(img, storePos, vec4(Color[offset].xyz, 1));
+	//imageStore(img, storePos, vec4(Color[offset].xyz, 1));
+	imageStore(img, storePos, vec4(1, 1, 1, 1));
 }
