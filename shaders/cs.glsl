@@ -20,6 +20,8 @@ uniform vec3 screenTL;
 uniform vec3 screenTR;
 uniform vec3 screenDL;
 
+uniform image2D img;
+
 struct Ray 
 {
 	vec3 origin;
@@ -88,7 +90,7 @@ void main()
 
 	Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
 
-	Color[offset] = vec4(0, 0, 0, 0);
+	Color[offset] = vec4(0, 0, 0, 1);
 	Sphere sHit;
 	bool succ = false;
 	vec3 rayCastHit;
@@ -131,4 +133,5 @@ void main()
 			Color[offset] += light[j].color * sHit.color * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
 		}
 	}
+	imageStore(img, storePos, vec4(Color[offset].xyz, 1));
 }

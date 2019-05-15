@@ -14,7 +14,7 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, csID, ssbo_col, ssbo_sphere, ssbo_light, u_camPos, u_scTL, u_scTR, u_scDL;
+        public int prog, csID, ssbo_col, ssbo_sphere, ssbo_light, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
         public float[] colors, spheres, cam, lights;
 		// initialize
 		public void Init()
@@ -22,6 +22,7 @@ namespace Template
             camera = new Camera(new Vector3(0, 0, -3), new Vector3(0, 0, 1), screen);
 
             colors = new float[screen.width * screen.height * 4];
+            img = CreateTex(screen.width, screen.height);
             spheres = new float[16];
             // Sphere 1: Red
             // Position
@@ -77,6 +78,7 @@ namespace Template
             u_scTL = GL.GetUniformLocation(prog, "screenTL");
             u_scTR = GL.GetUniformLocation(prog, "screenTR");
             u_scDL = GL.GetUniformLocation(prog, "screenDL");
+            u_img = GL.GetUniformLocation(prog, "img");
 
             Createssbo(ref ssbo_col, colors);
             Createssbo(ref ssbo_sphere, spheres);
@@ -85,7 +87,7 @@ namespace Template
 		// tick: renders one frame
 		public void Tick()
 		{
-			screen.Clear( 0 );
+			//screen.Clear( 0 );
             GL.UseProgram(prog);
 
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ssbo_col);
@@ -96,23 +98,24 @@ namespace Template
             GL.Uniform3(u_scTL, ref camera.screen[0]);
             GL.Uniform3(u_scTR, ref camera.screen[1]);
             GL.Uniform3(u_scDL, ref camera.screen[2]);
+            GL.Uniform1(u_img, 0);
 
             GL.DispatchCompute(screen.width/8, screen.height/8, 1);
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
+            GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, 0);
 
-            ReadFromBuffer(ssbo_col, colors);
-            for(int i = 0; i < screen.width; i++)
-            {
-                for (int j = 0; j < screen.height; j++)
-                {
-                    int index = i + j * screen.width;
-                    screen.pixels[index] = MixColor((int)(colors[index * 4] * 255), (int)(colors[index * 4 + 1] * 255), (int)(colors[index * 4 + 2] * 255));
-                }
-            }
-		}
+            //ReadFromBuffer(ssbo_col, colors);
+            //for(int i = 0; i < screen.width; i++)
+            //{
+            //    for (int j = 0; j < screen.height; j++)
+            //    {
+            //        int index = i + j * screen.width;
+            //        screen.pixels[index] = MixColor((int)(colors[index * 4] * 255), (int)(colors[index * 4 + 1] * 255), (int)(colors[index * 4 + 2] * 255));
+            //    }
+            //}
+        }
 
         void ReadFromBuffer(int ssbo, float[] data)
         {
@@ -174,6 +177,23 @@ namespace Template
             ssbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ssbo);
             GL.BufferData<float>(BufferTarget.ShaderStorageBuffer, data.Length * 4, data, BufferUsageHint.DynamicCopy);
+        }
+
+        private int CreateTex(int w, int h)
+        {
+            int tex;
+            tex = GL.GenTexture();
+
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, tex);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)All.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)All.Linear);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba32f, w, h, 0, OpenTK.Graphics.OpenGL.PixelFormat.Rgba, PixelType.Float, IntPtr.Zero);
+
+            GL.BindImageTexture(0, tex, 0, false, 0, TextureAccess.ReadWrite, SizedInternalFormat.Rgba32f);
+
+            return tex;
+
         }
 
     }

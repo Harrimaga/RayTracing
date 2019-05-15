@@ -39,6 +39,7 @@ namespace Template
 			Sprite.target = app.screen;
 			screenID = app.screen.GenTexture();
 			app.Init();
+            //VSync = OpenTK.VSyncMode.Off;
 		}
 		protected override void OnUnload( EventArgs e )
 		{
@@ -69,20 +70,16 @@ namespace Template
 				Exit();
 				return;
 			}
-			// convert MyApplication.screen to OpenGL texture
-			GL.BindTexture( TextureTarget.Texture2D, screenID );
-			GL.TexImage2D( TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba,
-						   app.screen.width, app.screen.height, 0,
-						   OpenTK.Graphics.OpenGL.PixelFormat.Bgra,
-						   PixelType.UnsignedByte, app.screen.pixels
-						 );
-			// draw screen filling quad
+            // convert MyApplication.screen to OpenGL texture
+            GL.ActiveTexture(TextureUnit.Texture0);
+			GL.BindTexture( TextureTarget.Texture2D, app.img );
 			GL.Begin( PrimitiveType.Quads );
 			GL.TexCoord2( 0.0f, 1.0f ); GL.Vertex2( -1.0f, -1.0f );
 			GL.TexCoord2( 1.0f, 1.0f ); GL.Vertex2( 1.0f, -1.0f );
 			GL.TexCoord2( 1.0f, 0.0f ); GL.Vertex2( 1.0f, 1.0f );
 			GL.TexCoord2( 0.0f, 0.0f ); GL.Vertex2( -1.0f, 1.0f );
 			GL.End();
+            GL.BindTexture(TextureTarget.Texture2D, 0);
 			// tell OpenTK we're done rendering
 			SwapBuffers();
 		}
