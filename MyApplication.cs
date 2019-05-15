@@ -32,8 +32,8 @@ namespace Template
             spheres[3] = 1f;
             //Colour
             spheres[4] = 1f; //R
-            spheres[5] = 0f; //G
-            spheres[6] = 0f; //B
+            spheres[5] = 0.2f; //G
+            spheres[6] = 0.2f; //B
             spheres[7] = 1f; //A
 
             // Sphere 2: Green
@@ -55,19 +55,19 @@ namespace Template
             lights[2] = -2f;
             lights[3] = 0f;
             // Intensity (colour)
-            lights[4] = 1f;
-            lights[5] = 0.75f;
-            lights[6] = 0.75f;
-            lights[7] = 0.75f;
+            lights[4] = 1.5f;
+            lights[5] = 1f;
+            lights[6] = 1f;
+            lights[7] = 1f;
             // Position
             lights[8] = 0f;
             lights[9] = 2f;
             lights[10] = 0f;
             lights[11] = 0f;
             // Intensity (colour)
-            lights[12] = 0.5f;
-            lights[13] = 0.5f;
-            lights[14] = 1f;
+            lights[12] = 0.75f;
+            lights[13] = 0.75f;
+            lights[14] = 1.5f;
             lights[15] = 1f;
 
             prog = GL.CreateProgram();
