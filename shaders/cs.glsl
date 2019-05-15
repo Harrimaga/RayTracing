@@ -37,7 +37,7 @@ layout(std430, binding=2) readonly buffer lights{
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-void IntersectSphere(in vec4 s, in Ray ray, out vec3 intersectionPoint, out bool success)
+void IntersectSphere(in vec4 s, inout Ray ray, out vec3 intersectionPoint, out bool success)
 {
 	vec3 c = s.xyz - ray.origin;
 	float t = dot(c, ray.direction);
@@ -89,42 +89,46 @@ void main()
 	Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
 
 	Color[offset] = vec4(0, 0, 0, 0);
+	Sphere sHit;
+	bool succ = false;
+	vec3 rayCastHit;
 	for(int i=0;i<sphere.length();i++)
 	{
 		bool suc;
-		vec3 rayCastHit;
-		IntersectSphere(sphere[i].pos, primaryRay, rayCastHit, suc);
+		vec3 rayCasthit;
+		IntersectSphere(sphere[i].pos, primaryRay, rayCasthit, suc);
 
 		if (suc) 
 		{
 			
+			succ = true;
+			sHit = sphere[i];
+			rayCastHit = rayCasthit;
+		}
+	}
+	// Shoot shadow rays
+	for(int j=0;j<light.length();j++)
+	{
+		vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
+		Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
+		bool intersectOther;
 
-			// Shoot shadow rays
-			for(int j=0;j<light.length();j++)
-			{
-				vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
-				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
-
-				bool intersectOther;
-
-				for(int k=0;k<sphere.length();k++)
-				{
-					vec3 notimp;
+		for(int k=0;k<sphere.length();k++)
+		{
+			vec3 notimp;
 					
-					IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+			IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
 
-					if (intersectOther)
-					{
-						break;
-					}
-				}
-
-				if (!intersectOther)
-				{
-					vec3 norm = normalize(rayCastHit-sphere[i].pos.xyz);
-					Color[offset] += light[j].color * sphere[i].color * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
-				}
+			if (intersectOther)
+			{
+				break;
 			}
+		}
+
+		if (!intersectOther)
+		{
+			vec3 norm = normalize(rayCastHit-sHit.pos.xyz);
+			Color[offset] += light[j].color * sHit.color * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
 		}
 	}
 }

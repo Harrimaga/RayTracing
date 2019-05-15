@@ -32,13 +32,13 @@ namespace Template
             spheres[3] = 1f;
             //Colour
             spheres[4] = 1f; //R
-            spheres[5] = 0.2f; //G
-            spheres[6] = 0.2f; //B
+            spheres[5] = 0f; //G
+            spheres[6] = 0.55f; //B
             spheres[7] = 1f; //A
 
             // Sphere 2: Green
-            spheres[8] = 1f;
-            spheres[9] = 1f;
+            spheres[8] = 0.5f;
+            spheres[9] = 0.5f;
             spheres[10] = 0f;
             spheres[11] = 0.5f;
             spheres[12] = 1f;
