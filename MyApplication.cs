@@ -14,7 +14,7 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, csID, ssbo_col, ssbo_sphere, ssbo_light, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
+        public int prog, csID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
         public float[] colors, spheres, cam, lights, planes;
 		// initialize
 		public void Init()
