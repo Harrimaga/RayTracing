@@ -9,6 +9,13 @@ struct Sphere
 	vec4 color;
 };
 
+struct Plane
+{
+	vec3 center;
+	vec3 normal;
+	vec4 color;
+};
+
 struct Light
 {
 	vec4 pos;
@@ -35,6 +42,10 @@ layout(std430, binding=1) readonly buffer spheres{
 
 layout(std430, binding=2) readonly buffer lights{
      Light light[];
+};
+
+layout(std430, binding=3) readonly buffer planes{
+	Plane plane[];
 };
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -75,6 +86,24 @@ void IntersectSphere(in vec4 s, inout Ray ray, out vec3 intersectionPoint, out b
 	return;
 }
 
+void IntersectPlane(in Plane p, inout Ray ray, out vec3 intersectionPoint, out bool success)
+{
+	float d = -dot(p.center, p.normal);
+	float t = -(dot(ray.origin, p.normal) + d) / dot(ray.direction, p.normal);
+
+	if (t > 0)
+	{
+		intersectionPoint = ray.origin + t * ray.direction;
+		success = true;
+		return;
+	}
+
+	intersectionPoint = vec3(0, 0, 0);
+	success = false;
+	return;
+	
+}
+
 void main() 
 {
 	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
@@ -91,6 +120,7 @@ void main()
 	Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
 
 	Color[offset] = vec4(0, 0, 0, 1);
+	vec4 hitColor;
 	Sphere sHit;
 	bool succ = false;
 	vec3 rayCastHit;
@@ -104,7 +134,22 @@ void main()
 		{
 			
 			succ = true;
-			sHit = sphere[i];
+			hitPos = sphere[i].pos.xyz;
+			hitColor = sphere[i].color;
+			rayCastHit = rayCasthit;
+		}
+	}
+	for(int ii=0;ii<plane.length();ii++)
+	{
+		bool suc;
+		vec3 rayCasthit;
+		IntersectPlane(plane[ii], primaryRay, rayCasthit, suc);
+
+		if (suc)
+		{
+			succ = true;
+			hitPos = rayCasthit;
+			hitColor = plane[ii].color;
 			rayCastHit = rayCasthit;
 		}
 	}
@@ -129,8 +174,8 @@ void main()
 
 		if (!intersectOther)
 		{
-			vec3 norm = normalize(rayCastHit-sHit.pos.xyz);
-			Color[offset] += light[j].color * sHit.color * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+			vec3 norm = normalize(rayCastHit-hitPos.xyz);
+			Color[offset] += light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
 		}
 	}
 	imageStore(img, storePos, vec4(Color[offset].xyz, 1));
