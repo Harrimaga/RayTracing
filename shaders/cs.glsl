@@ -27,7 +27,7 @@ uniform vec3 screenTL;
 uniform vec3 screenTR;
 uniform vec3 screenDL;
 
-uniform image2D img;
+uniform writeonly image2D img;
 
 struct Ray 
 {
@@ -154,7 +154,7 @@ void main()
 		}
 	}
 	// Shoot shadow rays
-	if(true) {
+	if(succ) {
 		for(int j=0;j<light.length();j++)
 		{
 			vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
@@ -181,5 +181,4 @@ void main()
 		}
 	}
 	imageStore(img, storePos, vec4(Color[offset].xyz, 1));
-	//imageStore(img, storePos, vec4(1, 1, 1, 1));
 }
