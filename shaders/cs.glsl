@@ -106,6 +106,7 @@ void IntersectPlane(in Plane p, inout Ray ray, out vec3 intersectionPoint, out b
 
 void main() 
 {
+	uint aa = 4;
 	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
 	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
@@ -115,70 +116,79 @@ void main()
 	//(center + new Vector3(-1, -1, 0))
     //(center + new Vector3( 1, -1, 0))
     //(center + new Vector3(-1,  1, 0))
-	vec3 pixel = vec3(screenTL.x+(screenTR.x-screenTL.x)*storePos.x/gWidth, screenTL.y+(screenDL.y-screenTL.y)*storePos.y/gHeight, screenTL.z);
-
-	Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
 
 	Color[offset] = vec4(0, 0, 0, 1);
 	vec4 hitColor;
 	vec3 hitPos;
 	bool succ = false;
 	vec3 rayCastHit;
-	for(int i=0;i<sphere.length();i++)
-	{
-		bool suc;
-		vec3 rayCasthit;
-		IntersectSphere(sphere[i].pos, primaryRay, rayCasthit, suc);
+	vec4 cc = vec4(0, 0, 0, 1);
+	for(int g = 0; g < aa; g++) {
+		for(int h = 0; h < aa; h++) {
+			vec3 pixel = vec3(screenTL.x+(screenTR.x-screenTL.x)*(storePos.x+g/float(aa))/gWidth, screenTL.y+(screenDL.y-screenTL.y)*(storePos.y+h/float(aa))/gHeight, screenTL.z);
+			Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
 
-		if (suc) 
-		{
-			
-			succ = true;
-			hitPos = sphere[i].pos.xyz;
-			hitColor = sphere[i].color;
-			rayCastHit = rayCasthit;
-		}
-	}
-	for(int ii=0;ii<plane.length();ii++)
-	{
-		bool suc;
-		vec3 rayCasthit;
-		IntersectPlane(plane[ii], primaryRay, rayCasthit, suc);
-
-		if (suc)
-		{
-			succ = true;
-			hitPos = rayCasthit;
-			hitColor = plane[ii].color;
-			rayCastHit = rayCasthit;
-		}
-	}
-	// Shoot shadow rays
-	if(succ) {
-		for(int j=0;j<light.length();j++)
-		{
-			vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
-			Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
-			bool intersectOther;
-
-			for(int k=0;k<sphere.length();k++)
+			Color[offset] = vec4(0, 0, 0, 1);
+			for(int i=0;i<sphere.length();i++)//intersect Spheres
 			{
-				vec3 notimp;
-						
-				IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+				bool suc;
+				vec3 rayCasthit;
+				IntersectSphere(sphere[i].pos, primaryRay, rayCasthit, suc);
 
-				if (intersectOther)
+				if (suc) 
 				{
-					break;
+					
+					succ = true;
+					hitPos = sphere[i].pos.xyz;
+					hitColor = sphere[i].color;
+					rayCastHit = rayCasthit;
 				}
 			}
-
-			if (!intersectOther)
+			for(int ii=0;ii<plane.length();ii++)//intersect planes
 			{
-				vec3 norm = normalize(rayCastHit-hitPos.xyz);
-				Color[offset] += light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+				bool suc;
+				vec3 rayCasthit;
+				IntersectPlane(plane[ii], primaryRay, rayCasthit, suc);
+
+				if (suc)
+				{
+					succ = true;
+					hitPos = rayCasthit;
+					hitColor = plane[ii].color;
+					rayCastHit = rayCasthit;
+				}
 			}
+			// Shoot shadow rays
+			if(succ) {
+				for(int j=0;j<light.length();j++)
+				{
+					vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * -0.0001f;
+					Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
+					bool intersectOther;
+
+					for(int k=0;k<sphere.length();k++)
+					{
+						vec3 notimp;
+								
+						IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+
+						if (intersectOther)
+						{
+							break;
+						}
+					}
+
+					if (!intersectOther)
+					{
+						vec3 norm = normalize(rayCastHit-hitPos.xyz);
+						Color[offset] += light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+					}
+				}
+			}
+			clamp(Color[offset], 0, 1);
+			cc += Color[offset]/(aa*aa);
 		}
 	}
-	imageStore(img, storePos, vec4(Color[offset].xyz, 1));
+	
+	imageStore(img, storePos, vec4(cc.xyz, 1));
 }
