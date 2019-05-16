@@ -51,7 +51,7 @@ namespace Template
             lights = new float[16];
             // Light 1
             // Position
-            lights[0] = 1.5f;
+            lights[0] = 1.0f;
             lights[1] = 1.5f;
             lights[2] = 0f;
             lights[3] = 0f;
@@ -137,7 +137,7 @@ namespace Template
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, ssbo_light);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, ssbo_plane);
                 
-            GL.Uniform3(u_camPos, ref camera.position);
+            GL.Uniform3(u_camPos, camera.position);
             GL.Uniform3(u_scTL, ref camera.screen[0]);
             GL.Uniform3(u_scTR, ref camera.screen[1]);
             GL.Uniform3(u_scDL, ref camera.screen[2]);
@@ -149,16 +149,6 @@ namespace Template
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, 0);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, 0);
-
-            //ReadFromBuffer(ssbo_col, colors);
-            //for(int i = 0; i < screen.width; i++)
-            //{
-            //    for (int j = 0; j < screen.height; j++)
-            //    {
-            //        int index = i + j * screen.width;
-            //        screen.pixels[index] = MixColor((int)(colors[index * 4] * 255), (int)(colors[index * 4 + 1] * 255), (int)(colors[index * 4 + 2] * 255));
-            //    }
-            //}
         }
 
         void ReadFromBuffer(int ssbo, float[] data)
@@ -175,45 +165,7 @@ namespace Template
             using (StreamReader sr = new StreamReader(name))
                 GL.ShaderSource(ID, sr.ReadToEnd()); GL.CompileShader(ID);
             GL.AttachShader(program, ID);
-            Console.WriteLine(GL.GetShaderInfoLog(ID)); }
-
-        int MixColor(int red, int green, int blue) {
-            if(red > 255)
-            {
-                red = 255;
-            }
-            if (blue > 255)
-            {
-                blue = 255;
-            }
-            if (green > 255)
-            {
-                green = 255;
-            }
-            if(red < 0)
-            {
-                red = 0;
-            }
-            if(green < 0)
-            {
-                green = 0;
-            }
-            if(blue < 0)
-            {
-                blue = 0;
-            }
-            return (red << 16) + (green << 8) + blue;
-        }
-
-        public void Render()
-        {
-            for (int y = 0; y < 512; y++)
-            {
-                for (int x = 0; x < 512; x++)
-                {
-                    // TODO: Shoot ray through every point on the screen
-                }
-            }
+            Console.WriteLine(GL.GetShaderInfoLog(ID));
         }
 
         public void Createssbo(ref int ssbo, float[] data)

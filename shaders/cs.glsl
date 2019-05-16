@@ -22,7 +22,7 @@ struct Light
 	vec4 color;
 };
 
-uniform vec3 camPos;
+uniform readonly vec3 camPos;
 uniform vec3 screenTL;
 uniform vec3 screenTR;
 uniform vec3 screenDL;
