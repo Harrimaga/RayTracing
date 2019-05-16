@@ -14,7 +14,7 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, csID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
+        public int prog, prog2, csID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
         public float[] colors, spheres, cam, lights, planes;
 		// initialize
 		public void Init()
@@ -33,8 +33,8 @@ namespace Template
             spheres[3] = 1f;
             //Colour
             spheres[4] = 1f; //R
-            spheres[5] = 0f; //G
-            spheres[6] = 0f; //B
+            spheres[5] = 1f; //G
+            spheres[6] = 1f; //B
             spheres[7] = 1f; //A
 
             // Sphere 2: Green
@@ -42,23 +42,23 @@ namespace Template
             spheres[9] = 0.5f;
             spheres[10] = 0f;
             spheres[11] = 0.5f;
-            spheres[12] = 0f;
+            spheres[12] = 1f;
             spheres[13] = 1f;
-            spheres[14] = 0f;
+            spheres[14] = 1f;
             spheres[15] = 1f;
 
 
             lights = new float[16];
             // Light 1
             // Position
-            lights[0] = 2f;
-            lights[1] = 2f;
-            lights[2] = -2f;
+            lights[0] = 1.5f;
+            lights[1] = 1.5f;
+            lights[2] = 0f;
             lights[3] = 0f;
             // Intensity (colour)
-            lights[4] = 2f;
-            lights[5] = 2f;
-            lights[6] = 2f;
+            lights[4] = 1.5f;
+            lights[5] = 1.5f;
+            lights[6] = 4f;
             lights[7] = 2f;
             // Position
             lights[8] = 0f;
@@ -66,29 +66,49 @@ namespace Template
             lights[10] = -1f;
             lights[11] = 0f;
             // Intensity (colour)
-            lights[12] = 1f;
-            lights[13] = 1f;
+            lights[12] = 4f;
+            lights[13] = 4f;
             lights[14] = 1f;
             lights[15] = 1f;
 
 
-            planes = new float[10];
+            planes = new float[24];
             // Plane 1
             // Center
             planes[0] = 0f;
-            planes[1] = -2f;
-            planes[2] = 0f;
-            // Normal
+            planes[1] = 0f;
+            planes[2] = 2f;
             planes[3] = 0f;
-            planes[4] = 1f;
+            // Normal
+            planes[4] = 0f;
             planes[5] = 0f;
+            planes[6] = -1f;
+            planes[7] = 0f;
             // Colour
-            planes[6] = 1f;
-            planes[7] = 1f;
             planes[8] = 1f;
             planes[9] = 1f;
+            planes[10] = 1f;
+            planes[11] = 1f;
+            // Plane 2
+            // Center
+            planes[12] = 2.1f;
+            planes[13] = 0f;
+            planes[14] = 2f;
+            planes[15] = 0f;
+            // Normal
+            planes[16] = -1f;
+            planes[17] = 0f;
+            planes[18] = 0f;
+            planes[19] = 0f;
+            // Colour
+            planes[20] = 1f;
+            planes[21] = 1f;
+            planes[22] = 1f;
+            planes[23] = 1f;
 
             prog = GL.CreateProgram();
+            prog2 = GL.CreateProgram();
+            LoadShader("../../shaders/phys.glsl", ShaderType.ComputeShader, prog2, out csID);
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
             GL.LinkProgram(prog);
             u_camPos = GL.GetUniformLocation(prog, "camPos");
@@ -105,14 +125,18 @@ namespace Template
 		// tick: renders one frame
 		public void Tick()
 		{
-			//screen.Clear( 0 );
+            //screen.Clear( 0 );
+            GL.UseProgram(prog2);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, ssbo_light);
+            GL.DispatchCompute(1, 1, 1);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, 0);
             GL.UseProgram(prog);
 
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ssbo_col);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, ssbo_sphere);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, ssbo_light);
             GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, ssbo_plane);
-
+                
             GL.Uniform3(u_camPos, ref camera.position);
             GL.Uniform3(u_scTL, ref camera.screen[0]);
             GL.Uniform3(u_scTR, ref camera.screen[1]);

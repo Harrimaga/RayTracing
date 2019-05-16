@@ -11,8 +11,8 @@ struct Sphere
 
 struct Plane
 {
-	vec3 center;
-	vec3 normal;
+	vec4 center;
+	vec4 normal;
 	vec4 color;
 };
 
@@ -40,7 +40,7 @@ layout(std430, binding=1) readonly buffer spheres{
     Sphere sphere[];
 };
 
-layout(std430, binding=2) readonly buffer lights{
+layout(std430, binding=2) buffer lights{
      Light light[];
 };
 
@@ -89,11 +89,12 @@ void IntersectSphere(in vec4 s, inout Ray ray, out vec3 intersectionPoint, out b
 void IntersectPlane(in Plane p, inout Ray ray, out vec3 intersectionPoint, out bool success)
 {
 	float d = -dot(p.center, p.normal);
-	float t = -(dot(ray.origin, p.normal) + d) / dot(ray.direction, p.normal);
+	float t = -(dot(ray.origin, p.normal.xyz) + d) / dot(ray.direction, p.normal.xyz);
 
-	if (t > 0)
+	if (t > 0 && t < ray.dis)
 	{
 		intersectionPoint = ray.origin + t * ray.direction;
+		ray.dis = t;
 		success = true;
 		return;
 	}
@@ -127,6 +128,7 @@ void main()
 		for(int h = 0; h < aa; h++) {
 			vec3 pixel = vec3(screenTL.x+(screenTR.x-screenTL.x)*(storePos.x+g/float(aa))/gWidth, screenTL.y+(screenDL.y-screenTL.y)*(storePos.y+h/float(aa))/gHeight, screenTL.z);
 			Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
+			vec3 norm;
 
 			Color[offset] = vec4(0, 0, 0, 1);
 			for(int i=0;i<sphere.length();i++)//intersect Spheres
@@ -142,6 +144,7 @@ void main()
 					hitPos = sphere[i].pos.xyz;
 					hitColor = sphere[i].color;
 					rayCastHit = rayCasthit;
+					norm = normalize(rayCastHit-hitPos.xyz);
 				}
 			}
 			for(int ii=0;ii<plane.length();ii++)//intersect planes
@@ -153,9 +156,10 @@ void main()
 				if (suc)
 				{
 					succ = true;
-					hitPos = rayCasthit;
 					hitColor = plane[ii].color;
+					hitPos = rayCasthit;
 					rayCastHit = rayCasthit;
+					norm = plane[ii].normal.xyz;
 				}
 			}
 			// Shoot shadow rays
@@ -180,7 +184,6 @@ void main()
 
 					if (!intersectOther)
 					{
-						vec3 norm = normalize(rayCastHit-hitPos.xyz);
 						Color[offset] += light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
 					}
 				}
