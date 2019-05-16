@@ -22,7 +22,7 @@ struct Light
 	vec4 color;
 };
 
-uniform readonly vec3 camPos;
+uniform vec3 camPos;
 uniform vec3 screenTL;
 uniform vec3 screenTR;
 uniform vec3 screenDL;
@@ -112,6 +112,7 @@ void main()
 	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
 	uint offset = storePos.y * gl_WorkGroupSize.x * gl_NumWorkGroups.x + storePos.x;
+	light[offset].pos.x += 0.01;
 
 
 	//(center + new Vector3(-1, -1, 0))

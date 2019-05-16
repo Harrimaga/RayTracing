@@ -117,27 +117,23 @@ namespace Template
             u_scDL = GL.GetUniformLocation(prog, "screenDL");
             u_img = GL.GetUniformLocation(prog, "img");
 
-            Createssbo(ref ssbo_col, colors);
-            Createssbo(ref ssbo_sphere, spheres);
-            Createssbo(ref ssbo_light, lights);
-            Createssbo(ref ssbo_plane, planes);
+            Createssbo(ref ssbo_col, colors, 0);
+            Createssbo(ref ssbo_sphere, spheres, 1);
+            Createssbo(ref ssbo_light, lights, 2);
+            Createssbo(ref ssbo_plane, planes, 3);
 		}
 		// tick: renders one frame
 		public void Tick()
 		{
             //screen.Clear( 0 );
-            GL.UseProgram(prog2);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, ssbo_light);
-            GL.DispatchCompute(1, 1, 1);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, 0);
-            GL.UseProgram(prog);
 
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, ssbo_col);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, ssbo_sphere);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, ssbo_light);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, ssbo_plane);
+            GL.UseProgram(prog2);
+            GL.DispatchCompute(1, 1, 1);
+            GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
+
+            GL.UseProgram(prog);
                 
-            GL.Uniform3(u_camPos, camera.position);
+            GL.Uniform3(u_camPos, ref camera.position);
             GL.Uniform3(u_scTL, ref camera.screen[0]);
             GL.Uniform3(u_scTR, ref camera.screen[1]);
             GL.Uniform3(u_scDL, ref camera.screen[2]);
@@ -145,10 +141,6 @@ namespace Template
 
             GL.DispatchCompute(screen.width/8, screen.height/8, 1);
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 1, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 2, 0);
-            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 3, 0);
         }
 
         void ReadFromBuffer(int ssbo, float[] data)
@@ -168,11 +160,12 @@ namespace Template
             Console.WriteLine(GL.GetShaderInfoLog(ID));
         }
 
-        public void Createssbo(ref int ssbo, float[] data)
+        public void Createssbo(ref int ssbo, float[] data, int bind)
         {
             ssbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ShaderStorageBuffer, ssbo);
             GL.BufferData<float>(BufferTarget.ShaderStorageBuffer, data.Length * 4, data, BufferUsageHint.DynamicCopy);
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, bind, ssbo);
         }
 
         private int CreateTex(int w, int h)
