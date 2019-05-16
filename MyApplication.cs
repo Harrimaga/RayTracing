@@ -88,7 +88,7 @@ namespace Template
             planes[8] = 1f;
             planes[9] = 1f;
             planes[10] = 1f;
-            planes[11] = 1f;
+            planes[11] = 0.5f;
             // Plane 2
             // Center
             planes[12] = 2.1f;
@@ -104,7 +104,7 @@ namespace Template
             planes[20] = 1f;
             planes[21] = 1f;
             planes[22] = 1f;
-            planes[23] = 1f;
+            planes[23] = 0.5f;
 
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
@@ -129,7 +129,7 @@ namespace Template
             //screen.Clear( 0 );
 
             GL.UseProgram(prog2);
-            GL.DispatchCompute(1, 1, 1);
+            GL.DispatchCompute(lights.Length, 1, 1);
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
             GL.UseProgram(prog);

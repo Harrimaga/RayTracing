@@ -13,5 +13,5 @@ layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 void main()
 {
-	light[0].pos.x += 0.1;
+	light[gl_GlobalInvocationID.x].pos.x += 0.00;
 }
