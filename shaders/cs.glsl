@@ -112,7 +112,7 @@ void main()
 	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
 	uint offset = storePos.y * gl_WorkGroupSize.x * gl_NumWorkGroups.x + storePos.x;
-	light[offset].pos.x += 0.01;
+	//light[offset].pos.z += 0.001;
 
 
 	//(center + new Vector3(-1, -1, 0))

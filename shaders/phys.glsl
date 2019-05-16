@@ -13,7 +13,5 @@ layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 void main()
 {
-	for(int i = 0; i < light.length(); i++) {
-		light[i].pos.x += 1;
-	}
+	light[0].pos.x += 0.1;
 }

@@ -14,7 +14,7 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, prog2, csID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
+        public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
         public float[] colors, spheres, cam, lights, planes;
 		// initialize
 		public void Init()
@@ -106,11 +106,12 @@ namespace Template
             planes[22] = 1f;
             planes[23] = 1f;
 
-            prog = GL.CreateProgram();
             prog2 = GL.CreateProgram();
-            LoadShader("../../shaders/phys.glsl", ShaderType.ComputeShader, prog2, out csID);
+            prog = GL.CreateProgram();
+            LoadShader("../../shaders/phys.glsl", ShaderType.ComputeShader, prog2, out physID);
             LoadShader("../../shaders/cs.glsl", ShaderType.ComputeShader, prog, out csID);
             GL.LinkProgram(prog);
+            GL.LinkProgram(prog2);
             u_camPos = GL.GetUniformLocation(prog, "camPos");
             u_scTL = GL.GetUniformLocation(prog, "screenTL");
             u_scTR = GL.GetUniformLocation(prog, "screenTR");
