@@ -105,12 +105,13 @@ void IntersectPlane(in Plane p, inout Ray ray, out vec3 intersectionPoint, out b
 	
 }
 
-void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out vec4 hitColor) {
+void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out vec4 hitColor, inout float totdis) {
 	vec3 hitPos;
 	bool succ = false, isLight = false;
 	vec3 rayCastHit;
 	vec3 norm;
 	float lightAngle;
+	float lightw;
 
 	col = vec4(0, 0, 0, 1);
 	for(int i=0;i<sphere.length();i++)//intersect Spheres
@@ -144,6 +145,7 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 			hitColor = light[i].color;
 			rayCastHit = rayCasthit;
 			isLight = true;
+			lightw = light[i].pos.w;
 			lightAngle = dot(normalize(rayCasthit - primaryRay.origin), normalize(light[i].pos.xyz - rayCasthit));
 		}
 	}
@@ -167,7 +169,8 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	if(succ) 
 	{
 		if(isLight) {
-			col += hitColor * lightAngle;
+			totdis++;
+			col += hitColor * lightAngle / (totdis*totdis);
 			hitColor = vec4(1, 1, 1, 0);
 		}
 		else {
@@ -216,6 +219,7 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 				}
 			}
 		}
+		totdis = primaryRay.dis;
 	}
 }
 
@@ -244,12 +248,13 @@ void main()
 			int am = 0;
 			float atot = 1;
 			Color[offset] = vec4(0, 0, 0, 0);
+			float totdis = 0;
 			while(atot > 0 && am < 10) 
 			{
 				vec4 nc;
 				Ray r;
 				vec4 prev = hitColor;
-				GetColor(0, nc, primaryRay, primaryRay, hitColor);
+				GetColor(0, nc, primaryRay, primaryRay, hitColor, totdis);
 				Color[offset] += nc*atot*prev;
 				atot *= hitColor.w;
 				am++;
