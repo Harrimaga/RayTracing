@@ -107,9 +107,10 @@ void IntersectPlane(in Plane p, inout Ray ray, out vec3 intersectionPoint, out b
 
 void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out vec4 hitColor) {
 	vec3 hitPos;
-	bool succ = false;
+	bool succ = false, isLight = false;
 	vec3 rayCastHit;
 	vec3 norm;
+	float lightAngle;
 
 	col = vec4(0, 0, 0, 1);
 	for(int i=0;i<sphere.length();i++)//intersect Spheres
@@ -128,6 +129,24 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 			norm = normalize(rayCastHit-hitPos.xyz);
 		}
 	}
+	for(int i=0;i<light.length();i++)//intersect lights
+	{
+		bool suc;
+		vec3 rayCasthit;
+		IntersectSphere(light[i].pos, primaryRay, rayCasthit, suc);
+
+		if (suc) 
+		{
+					
+			succ = true;
+			hitPos = light[i].pos.xyz;
+			float rad = light[i].pos.w/light[i].pos.w;
+			hitColor = light[i].color;
+			rayCastHit = rayCasthit;
+			isLight = true;
+			lightAngle = dot(normalize(rayCasthit - primaryRay.origin), normalize(light[i].pos.xyz - rayCasthit));
+		}
+	}
 	for(int ii=0;ii<plane.length();ii++)//intersect planes
 	{
 		bool suc;
@@ -141,53 +160,60 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 			hitPos = rayCasthit;
 			rayCastHit = rayCasthit;
 			norm = plane[ii].normal.xyz;
+			isLight = false;
 		}
 	}
 	// Shoot shadow rays
 	if(succ) 
 	{
-		if(hitColor.w > 0) 
-		{
-			//reflect
-			vec3 dir = primaryRay.direction - 2*dot(norm, primaryRay.direction)*norm;
-			refRay = Ray(rayCastHit + dir*0.0001f, dir, 999999);
+		if(isLight) {
+			col += hitColor * lightAngle;
+			hitColor = vec4(1, 1, 1, 0);
 		}
-		for(int j=0;j<light.length();j++)
-		{
-			vec3 shadowOrigin = rayCastHit + normalize(norm) * 0.0001f;
-			Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
-			bool intersectOther;
-
-			for(int k=0;k<sphere.length();k++)
+		else {
+			if(hitColor.w > 0) 
 			{
-				vec3 notimp;
-								
-				IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+				//reflect
+				vec3 dir = primaryRay.direction - 2*dot(norm, primaryRay.direction)*norm;
+				refRay = Ray(rayCastHit + dir*0.0001f, dir, 999999);
+			}
+			for(int j=0;j<light.length();j++)
+			{
+				vec3 shadowOrigin = rayCastHit + normalize(norm) * 0.0001f;
+				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
+				bool intersectOther;
 
+				for(int k=0;k<sphere.length();k++)
+				{
+					vec3 notimp;
+									
+					IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+
+					if (intersectOther)
+					{
+						break;
+					}
+				}
 				if (intersectOther)
 				{
-					break;
+					continue;
 				}
-			}
-			if (intersectOther)
-			{
-				continue;
-			}
-			for(int k=0;k<plane.length();k++)
-			{
-				vec3 notimp;
-								
-				IntersectPlane(plane[k], shadowRay, notimp, intersectOther);
-
-				if (intersectOther)
+				for(int k=0;k<plane.length();k++)
 				{
-					break;
-				}
-			}
+					vec3 notimp;
+									
+					IntersectPlane(plane[k], shadowRay, notimp, intersectOther);
 
-			if (!intersectOther)
-			{
-				col += (1-hitColor.w)*light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+					if (intersectOther)
+					{
+						break;
+					}
+				}
+
+				if (!intersectOther)
+				{
+					col += (1-hitColor.w)*light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+				}
 			}
 		}
 	}
@@ -195,7 +221,7 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 
 void main() 
 {
-	uint aa = 4;
+	uint aa = 5;
 	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
 	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
