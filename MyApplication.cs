@@ -35,7 +35,7 @@ namespace Template
             spheres[4] = 1f; //R
             spheres[5] = 1f; //G
             spheres[6] = 1f; //B
-            spheres[7] = 1f; //A
+            spheres[7] = 0f; //A
 
             // Sphere 2: Green
             spheres[8] = 0.5f;
@@ -45,7 +45,7 @@ namespace Template
             spheres[12] = 1f;
             spheres[13] = 1f;
             spheres[14] = 1f;
-            spheres[15] = 1f;
+            spheres[15] = 0f;
 
 
             lights = new float[16];
@@ -63,13 +63,13 @@ namespace Template
             // Position
             lights[8] = 0f;
             lights[9] = 0f;
-            lights[10] = -1f;
+            lights[10] = -2f;
             lights[11] = 0f;
             // Intensity (colour)
             lights[12] = 4f;
             lights[13] = 4f;
             lights[14] = 1f;
-            lights[15] = 1f;
+            lights[15] = 0f;
 
 
             planes = new float[24];
@@ -88,7 +88,7 @@ namespace Template
             planes[8] = 1f;
             planes[9] = 1f;
             planes[10] = 1f;
-            planes[11] = 0.5f;
+            planes[11] = 0.6f;
             // Plane 2
             // Center
             planes[12] = 2.1f;
@@ -101,10 +101,10 @@ namespace Template
             planes[18] = 0f;
             planes[19] = 0f;
             // Colour
-            planes[20] = 1f;
+            planes[20] = 0f;
             planes[21] = 1f;
             planes[22] = 1f;
-            planes[23] = 0.5f;
+            planes[23] = 0.6f;
 
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();

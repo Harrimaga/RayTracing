@@ -105,20 +105,13 @@ void IntersectPlane(in Plane p, inout Ray ray, out vec3 intersectionPoint, out b
 	
 }
 
-void GetColor(in uint offset, in int am, out vec4 col, in int g, in int h, in uint aa, in uint gWidth, in uint gHeight, in ivec2 storePos) {
-	if(am > 10) {
-		col = vec4(0, 0, 0, 0);
-		return;
-	}
-	vec4 hitColor;
+void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out vec4 hitColor) {
 	vec3 hitPos;
 	bool succ = false;
 	vec3 rayCastHit;
-	vec3 pixel = vec3(screenTL.x+(screenTR.x-screenTL.x)*(storePos.x+g/float(aa))/gWidth, screenTL.y+(screenDL.y-screenTL.y)*(storePos.y+h/float(aa))/gHeight, screenTL.z);
-	Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
 	vec3 norm;
 
-	Color[offset] = vec4(0, 0, 0, 1);
+	col = vec4(0, 0, 0, 1);
 	for(int i=0;i<sphere.length();i++)//intersect Spheres
 	{
 		bool suc;
@@ -153,9 +146,15 @@ void GetColor(in uint offset, in int am, out vec4 col, in int g, in int h, in ui
 	// Shoot shadow rays
 	if(succ) 
 	{
+		if(hitColor.w > 0) 
+		{
+			//reflect
+			vec3 dir = primaryRay.direction - 2*dot(norm, primaryRay.direction)*norm;
+			refRay = Ray(rayCastHit + dir*0.0001f, dir, 999999);
+		}
 		for(int j=0;j<light.length();j++)
 		{
-			vec3 shadowOrigin = rayCastHit + normalize(light[j].pos.xyz - rayCastHit) * 0.0001f;
+			vec3 shadowOrigin = rayCastHit + normalize(norm) * 0.0001f;
 			Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
 			bool intersectOther;
 
@@ -188,7 +187,7 @@ void GetColor(in uint offset, in int am, out vec4 col, in int g, in int h, in ui
 
 			if (!intersectOther)
 			{
-				col = light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+				col += (1-hitColor.w)*light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
 			}
 		}
 	}
@@ -210,9 +209,25 @@ void main()
 
 	Color[offset] = vec4(0, 0, 0, 1);
 	vec4 cc = vec4(0, 0, 0, 1);
+	
 	for(int g = 0; g < aa; g++) {
 		for(int h = 0; h < aa; h++) {
-			GetColor(offset, 0, Color[offset], g, h, aa, gWidth, gHeight, storePos);
+			vec3 pixel = vec3(screenTL.x+(screenTR.x-screenTL.x)*(storePos.x+g/float(aa))/gWidth, screenTL.y+(screenDL.y-screenTL.y)*(storePos.y+h/float(aa))/gHeight, screenTL.z);
+			Ray primaryRay = Ray(camPos, normalize(pixel - camPos), 999999);
+			vec4 hitColor = vec4(1, 1, 1, 1);
+			int am = 0;
+			float atot = 1;
+			Color[offset] = vec4(0, 0, 0, 0);
+			while(atot > 0 && am < 10) 
+			{
+				vec4 nc;
+				Ray r;
+				vec4 prev = hitColor;
+				GetColor(0, nc, primaryRay, primaryRay, hitColor);
+				Color[offset] += nc*atot*prev;
+				atot *= hitColor.w;
+				am++;
+			}
 			clamp(Color[offset], 0, 1);
 			cc += Color[offset]/(aa*aa);
 		}
