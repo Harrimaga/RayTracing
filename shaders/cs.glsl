@@ -86,10 +86,12 @@ void IntersectSphere(in vec4 s, inout Ray ray, out vec3 intersectionPoint, out b
 	return;
 }
 
-void IntersectPlane(in Plane p, inout Ray ray, out vec3 intersectionPoint, out bool success)
+void IntersectPlane(in int p, inout Ray ray, out vec3 intersectionPoint, out bool success)
 {
-	float d = -dot(p.center, p.normal);
-	float t = -(dot(ray.origin, p.normal.xyz) + d) / dot(ray.direction, p.normal.xyz);
+	float d = -dot(plane[p].center, plane[p].normal);
+	float e = dot(ray.origin, plane[p].normal.xyz);
+	float f = dot(ray.direction, plane[p].normal.xyz);
+	float t = -(e + d) / f;
 
 	if (t > 0 && t < ray.dis)
 	{
@@ -153,8 +155,8 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	{
 		bool suc;
 		vec3 rayCasthit;
-		IntersectPlane(plane[ii], primaryRay, rayCasthit, suc);
-
+		IntersectPlane(ii, primaryRay, rayCasthit, suc);
+		
 		if (suc)
 		{
 			succ = true;
@@ -205,7 +207,7 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 				{
 					vec3 notimp;
 									
-					IntersectPlane(plane[k], shadowRay, notimp, intersectOther);
+					IntersectPlane(k, shadowRay, notimp, intersectOther);
 
 					if (intersectOther)
 					{
