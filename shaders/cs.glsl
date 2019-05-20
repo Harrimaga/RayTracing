@@ -227,7 +227,7 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 
 void main() 
 {
-	uint aa = 5;
+	uint aa = 3;
 	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
 	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
@@ -251,7 +251,7 @@ void main()
 			float atot = 1;
 			Color[offset] = vec4(0, 0, 0, 0);
 			float totdis = 0;
-			while(atot > 0 && am < 10) 
+			while(atot > 0 && am < 4) 
 			{
 				vec4 nc;
 				Ray r;
