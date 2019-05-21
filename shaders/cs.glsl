@@ -22,12 +22,13 @@ struct Light
 	vec4 color;
 };
 
-uniform vec3 camPos;
-uniform vec3 screenTL;
-uniform vec3 screenTR;
-uniform vec3 screenDL;
-
-uniform writeonly image2D img;
+struct Tri
+{
+	Plane p;
+	vec4 v0;
+	vec4 v1;
+	vec4 v2;
+};
 
 struct Ray 
 {
@@ -35,6 +36,13 @@ struct Ray
 	vec3 direction;
 	float dis;
 };
+
+uniform vec3 camPos;
+uniform vec3 screenTL;
+uniform vec3 screenTR;
+uniform vec3 screenDL;
+
+uniform writeonly image2D img;
 
 layout(std430, binding=1) readonly buffer spheres{
     Sphere sphere[];
@@ -46,6 +54,10 @@ layout(std430, binding=2) buffer lights{
 
 layout(std430, binding=3) readonly buffer planes{
 	Plane plane[];
+};
+
+layout(std430, binding=4) readonly buffer tries{
+	Tri tri[];
 };
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
@@ -107,7 +119,42 @@ void IntersectPlane(in int p, inout Ray ray, out vec3 intersectionPoint, out boo
 	
 }
 
-void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out vec4 hitColor, inout float totdis) {
+void IntersectTri(in int tt, inout Ray ray, out vec3 intersectionPoint, out bool success) 
+{
+	//same code as intersect plane
+	float d = -dot(tri[tt].p.center, tri[tt].p.normal);
+	float e = dot(ray.origin, tri[tt].p.normal.xyz);
+	float f = dot(ray.direction, tri[tt].p.normal.xyz);
+	float t = -(e + d) / f;
+
+	if (t > 0 && t < ray.dis)
+	{
+		intersectionPoint = ray.origin + t * ray.direction;
+		vec3 p0 = tri[tt].v1.xyz - tri[tt].v0.xyz;
+		vec3 p1 = tri[tt].v2.xyz - tri[tt].v1.xyz;
+		vec3 p2 = tri[tt].v0.xyz - tri[tt].v2.xyz;
+		vec3 c0 = intersectionPoint - tri[tt].v0.xyz;
+		vec3 c1 = intersectionPoint - tri[tt].v1.xyz;
+		vec3 c2 = intersectionPoint - tri[tt].v2.xyz;
+		float a0 = dot(tri[tt].p.normal.xyz, cross(p0, c0));
+		float a1 = dot(tri[tt].p.normal.xyz, cross(p1, c1));
+		float a2 = dot(tri[tt].p.normal.xyz, cross(p2, c2));
+
+		if(a0 < 0 && a1 < 0 && a2 < 0 || a0 > 0 && a1 > 0 && a2 > 0) 
+		{
+			ray.dis = t;
+			success = true;
+			return;
+		}
+	}
+
+	intersectionPoint = vec3(0, 0, 0);
+	success = false;
+	return;
+}
+
+void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out vec4 hitColor, inout float totdis) 
+{
 	vec3 hitPos;
 	bool succ = false, isLight = false;
 	vec3 rayCastHit;
@@ -167,6 +214,22 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 			isLight = false;
 		}
 	}
+	for(int ii=0;ii<tri.length();ii++)//intersect planes
+	{
+		bool suc;
+		vec3 rayCasthit;
+		IntersectTri(ii, primaryRay, rayCasthit, suc);
+		
+		if (suc)
+		{
+			succ = true;
+			hitColor = tri[ii].p.color;
+			hitPos = rayCasthit;
+			rayCastHit = rayCasthit;
+			norm = tri[ii].p.normal.xyz;
+			isLight = false;
+		}
+	}
 	// Shoot shadow rays
 	if(succ) 
 	{
@@ -208,6 +271,21 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 					vec3 notimp;
 									
 					IntersectPlane(k, shadowRay, notimp, intersectOther);
+
+					if (intersectOther)
+					{
+						break;
+					}
+				}
+				if (intersectOther)
+				{
+					continue;
+				}
+				for(int k=0;k<tri.length();k++)
+				{
+					vec3 notimp;
+									
+					IntersectTri(k, shadowRay, notimp, intersectOther);
 
 					if (intersectOther)
 					{

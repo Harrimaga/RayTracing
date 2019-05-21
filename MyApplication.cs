@@ -14,8 +14,8 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
-        public float[] colors, spheres, cam, lights, planes;
+        public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, ssbo_tri, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
+        public float[] colors, spheres, cam, lights, planes, tries;
 		// initialize
 		public void Init()
 		{
@@ -106,6 +106,39 @@ namespace Template
             planes[22] = 1f;
             planes[23] = 0.2f;
 
+            tries = new float[24];
+            // tri 1: Plane
+            // Random point in the tri
+            tries[0] = 2f;
+            tries[1] = 0f;
+            tries[2] = 1f;
+            tries[3] = 0f;
+            // Normal
+            tries[4] = -1f;
+            tries[5] = 0f;
+            tries[6] = 0f;
+            tries[7] = 0f;
+            // Colour
+            tries[8] = 1f;
+            tries[9] = 1f;
+            tries[10] = 1f;
+            tries[11] = 0.8f;
+            // v0
+            tries[12] = 2f;
+            tries[13] = 1f;
+            tries[14] = -0.5f;
+            tries[15] = 0f;//ignore
+            // v1
+            tries[16] = 2f;
+            tries[17] = -1f;
+            tries[18] = -0.5f;
+            tries[19] = 0f;//ignore
+            // v2
+            tries[20] = 2f;
+            tries[21] = 1f;
+            tries[22] = 1f;
+            tries[23] = 0f;//ignore
+
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
             LoadShader("../../shaders/phys.glsl", ShaderType.ComputeShader, prog2, out physID);
@@ -122,7 +155,8 @@ namespace Template
             Createssbo(ref ssbo_sphere, spheres, 1);
             Createssbo(ref ssbo_light, lights, 2);
             Createssbo(ref ssbo_plane, planes, 3);
-		}
+            Createssbo(ref ssbo_tri, tries, 4);
+        }
 		// tick: renders one frame
 		public void Tick()
 		{
