@@ -127,7 +127,7 @@ namespace Template
             spheres[4] = 1f; //R
             spheres[5] = 1f; //G
             spheres[6] = 1f; //B
-            spheres[7] = 0f; //A
+            spheres[7] = 0.1f; //A
 
             // Sphere 2: Green
             spheres[8] = 0.5f;
@@ -145,24 +145,25 @@ namespace Template
             lights = new float[16];
             // Light 1
             // Position
-            lights[0] = 1.0f;
-            lights[1] = 1.5f;
-            lights[2] = -0.5f;
+            lights[0] = 0.0f;
+            lights[1] = 0.5f;
+            lights[2] = -0.75f;
             lights[3] = 0.1f;
             // Intensity (colour)
-            lights[4] = 1.5f;
-            lights[5] = 1.5f;
+            lights[4] = 4f;
+            lights[5] = 4f;
             lights[6] = 4f;
             lights[7] = 0f;
+            //sunlight
             // Position
-            lights[8] = 0f;
-            lights[9] = 0f;
-            lights[10] = -2f;
+            lights[8] = -8f;
+            lights[9] = -3f;
+            lights[10] = -15f;
             lights[11] = 0.1f;
             // Intensity (colour)
-            lights[12] = 4f;
-            lights[13] = 4f;
-            lights[14] = 1.5f;
+            lights[12] = 200f;
+            lights[13] = 200f;
+            lights[14] = 175f;
             lights[15] = 0f;
         }
 
@@ -182,20 +183,32 @@ namespace Template
             planes[7] = 0f;
             // Colour
             planes[8] = 1f;
-            planes[9] = 1f;
-            planes[10] = 1f;
-            planes[11] = 0.5f;
+            planes[9] = 0.75f;
+            planes[10] = 0.6f;
+            planes[11] = 0.8f;
         }
 
         private void CreateTriData()
         {
-            tries = new float[24];
-            AddTri(new Vector3(-2, 0, -1), new Vector3(0, 0, -1), new Vector3(0, 1, -1), new Vector4(1f, 1f, 1f, 0), 0);
+            tries = new float[8*24];
+            //left wall
+            AddTri(new Vector3(-3.5f, -2f, -0), new Vector3(-3.5f, 2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 0);
+            AddTri(new Vector3(-3.5f, -2f, -0), new Vector3(-3.5f, 2f, -4f), new Vector3(-3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 1);
+            //right wall
+            AddTri(new Vector3(3.5f, -2f, -0), new Vector3(3.5f, 2f, -4f), new Vector3(3.5f, 2f, 0f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 2);
+            AddTri(new Vector3(3.5f, -2f, -0), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 3);
+            //up wall
+            AddTri(new Vector3(-3.5f, -2f, -0f), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, -2f, -0f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 4);
+            AddTri(new Vector3(-3.5f, -2f, -0), new Vector3(-3.5f, -2f, -4f), new Vector3(3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 5);
+            //down wall
+            AddTri(new Vector3(-3.5f, 2f, -0f), new Vector3(3.5f, 2f, -0f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 6);
+            AddTri(new Vector3(-3.5f, 2f, -0), new Vector3(3.5f, 2f, -4f), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 7);
+
         }
 
         private void AddTri(Vector3 v0, Vector3 v1, Vector3 v2, Vector4 color, int tNum)
         {
-            Vector3 normal = Vector3.Cross(Vector3.Normalize(v2 - v0), Vector3.Normalize(v1 - v2));
+            Vector3 normal = Vector3.Normalize(Vector3.Cross(Vector3.Normalize(v2 - v0), Vector3.Normalize(v1 - v2)));
             tNum *= 24;
             tries[tNum] = v0.X;
             tries[tNum + 1] = v0.Y;
