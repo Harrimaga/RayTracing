@@ -19,125 +19,18 @@ namespace Template
 		// initialize
 		public void Init()
 		{
-            camera = new Camera(new Vector3(0, 0, -3), new Vector3(0, 0, 1), screen);
+            camera = new Camera(new Vector3(0, 0, -8), new Vector3(0, 0, 2), screen);
 
             colors = new float[screen.width * screen.height * 4];
             img = CreateTex(screen.width, screen.height);
-            spheres = new float[16];
-            // Sphere 1: Red
-            // Position
-            spheres[0] = 0f;
-            spheres[1] = 0f;
-            spheres[2] = 1.5f;
-            //Radius
-            spheres[3] = 1f;
-            //Colour
-            spheres[4] = 1f; //R
-            spheres[5] = 1f; //G
-            spheres[6] = 1f; //B
-            spheres[7] = 0f; //A
 
-            // Sphere 2: Green
-            spheres[8] = 0.5f;
-            spheres[9] = 0.5f;
-            spheres[10] = 0f;
-            spheres[11] = 0.5f;
-            spheres[12] = 1f;
-            spheres[13] = 0.5f;
-            spheres[14] = 1f;
-            spheres[15] = 0.5f;
+            CreateSphereData();
 
+            CreateLightData();
 
-            lights = new float[16];
-            // Light 1
-            // Position
-            lights[0] = 1.0f;
-            lights[1] = 1.5f;
-            lights[2] = 0f;
-            lights[3] = 0.1f;
-            // Intensity (colour)
-            lights[4] = 1.5f;
-            lights[5] = 1.5f;
-            lights[6] = 4f;
-            lights[7] = 0f;
-            // Position
-            lights[8] = 0f;
-            lights[9] = 0f;
-            lights[10] = -2f;
-            lights[11] = 0.1f;
-            // Intensity (colour)
-            lights[12] = 4f;
-            lights[13] = 4f;
-            lights[14] = 1.5f;
-            lights[15] = 0f;
+            CreatePlaneData();
 
-
-            planes = new float[24];
-            // Plane 1
-            // Center
-            planes[0] = 0f;
-            planes[1] = 0f;
-            planes[2] = 2f;
-            planes[3] = 0f;
-            // Normal
-            planes[4] = 0f;
-            planes[5] = 0f;
-            planes[6] = -1f;
-            planes[7] = 0f;
-            // Colour
-            planes[8] = 1f;
-            planes[9] = 1f;
-            planes[10] = 1f;
-            planes[11] = 0.6f;
-            // Plane 2
-            // Center
-            planes[12] = 2.1f;
-            planes[13] = 0f;
-            planes[14] = 2f;
-            planes[15] = 0f;
-            // Normal
-            planes[16] = -1f;
-            planes[17] = 0f;
-            planes[18] = 0f;
-            planes[19] = 0f;
-            // Colour
-            planes[20] = 0f;
-            planes[21] = 1f;
-            planes[22] = 1f;
-            planes[23] = 0.2f;
-
-            tries = new float[24];
-            // tri 1: Plane
-            // Random point in the tri
-            tries[0] = 2f;
-            tries[1] = 0f;
-            tries[2] = 1f;
-            tries[3] = 0f;
-            // Normal
-            tries[4] = -1f;
-            tries[5] = 0f;
-            tries[6] = 0f;
-            tries[7] = 0f;
-            // Colour
-            tries[8] = 1f;
-            tries[9] = 1f;
-            tries[10] = 1f;
-            tries[11] = 0.8f;
-            // v0
-            tries[12] = 2f;
-            tries[13] = 1f;
-            tries[14] = -0.5f;
-            tries[15] = 0f;//ignore
-            // v1
-            tries[16] = 2f;
-            tries[17] = -1f;
-            tries[18] = -0.5f;
-            tries[19] = 0f;//ignore
-            // v2
-            tries[20] = 2f;
-            tries[21] = 1f;
-            tries[22] = 1f;
-            tries[23] = 0f;//ignore
+            CreateTriData();
 
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
@@ -218,6 +111,111 @@ namespace Template
 
             return tex;
 
+        }
+
+        private void CreateSphereData()
+        {
+            spheres = new float[16];
+            // Sphere 1: Red
+            // Position
+            spheres[0] = -0.5f;
+            spheres[1] = -1.5f;
+            spheres[2] = 0f;
+            //Radius
+            spheres[3] = 1f;
+            //Colour
+            spheres[4] = 1f; //R
+            spheres[5] = 1f; //G
+            spheres[6] = 1f; //B
+            spheres[7] = 0f; //A
+
+            // Sphere 2: Green
+            spheres[8] = 0.5f;
+            spheres[9] = 0.5f;
+            spheres[10] = 0f;
+            spheres[11] = 0.5f;
+            spheres[12] = 1f;
+            spheres[13] = 0.5f;
+            spheres[14] = 1f;
+            spheres[15] = 0.5f;
+        }
+
+        private void CreateLightData()
+        {
+            lights = new float[16];
+            // Light 1
+            // Position
+            lights[0] = 1.0f;
+            lights[1] = 1.5f;
+            lights[2] = -0.5f;
+            lights[3] = 0.1f;
+            // Intensity (colour)
+            lights[4] = 1.5f;
+            lights[5] = 1.5f;
+            lights[6] = 4f;
+            lights[7] = 0f;
+            // Position
+            lights[8] = 0f;
+            lights[9] = 0f;
+            lights[10] = -2f;
+            lights[11] = 0.1f;
+            // Intensity (colour)
+            lights[12] = 4f;
+            lights[13] = 4f;
+            lights[14] = 1.5f;
+            lights[15] = 0f;
+        }
+
+        private void CreatePlaneData()
+        {
+            planes = new float[24];
+            // Plane 1
+            // Center
+            planes[0] = 0f;
+            planes[1] = 0f;
+            planes[2] = 0f;
+            planes[3] = 0f;
+            // Normal
+            planes[4] = 0f;
+            planes[5] = 0f;
+            planes[6] = -1f;
+            planes[7] = 0f;
+            // Colour
+            planes[8] = 1f;
+            planes[9] = 1f;
+            planes[10] = 1f;
+            planes[11] = 0.5f;
+        }
+
+        private void CreateTriData()
+        {
+            tries = new float[24];
+            AddTri(new Vector3(-2, 0, -1), new Vector3(0, 0, -1), new Vector3(0, 1, -1), new Vector4(1f, 1f, 1f, 0), 0);
+        }
+
+        private void AddTri(Vector3 v0, Vector3 v1, Vector3 v2, Vector4 color, int tNum)
+        {
+            Vector3 normal = Vector3.Cross(Vector3.Normalize(v2 - v0), Vector3.Normalize(v1 - v2));
+            tNum *= 24;
+            tries[tNum] = v0.X;
+            tries[tNum + 1] = v0.Y;
+            tries[tNum + 2] = v0.Z;
+            tries[tNum + 4] = normal.X;
+            tries[tNum + 5] = normal.Y;
+            tries[tNum + 6] = normal.Z;
+            tries[tNum + 8] = color.X;
+            tries[tNum + 9] = color.Y;
+            tries[tNum + 10] = color.Z;
+            tries[tNum + 11] = color.W;
+            tries[tNum + 12] = v0.X;
+            tries[tNum + 13] = v0.Y;
+            tries[tNum + 14] = v0.Z;
+            tries[tNum + 16] = v1.X;
+            tries[tNum + 17] = v1.Y;
+            tries[tNum + 18] = v1.Z;
+            tries[tNum + 20] = v2.X;
+            tries[tNum + 21] = v2.Y;
+            tries[tNum + 22] = v2.Z;
         }
 
     }
