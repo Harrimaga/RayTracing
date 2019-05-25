@@ -18,6 +18,7 @@ namespace Template
         public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, ssbo_tri, u_camPos, u_scTL, u_scTR, u_scDL, u_img, u_positions, u_input, img;
         public float[] colors, spheres, cam, lights, planes, tries;
         public Vector4 input, positions;
+        public Vector3 direction;
         public DateTime time;
 		// initialize
 		public void Init()
@@ -41,8 +42,10 @@ namespace Template
 
             CreatePlayer2();
 
+            Random rnd = new Random();
+            direction = new Vector3((rnd.Next(100) < 50) ? 1 : -1, (float)rnd.NextDouble() * 2 - 1, 0);
+            Vector3.Normalize(direction);
             
-
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
             LoadShader("../../shaders/phys.glsl", ShaderType.ComputeShader, prog2, out physID);
@@ -173,7 +176,7 @@ namespace Template
 
         private void CreateLightData()
         {
-            lights = new float[16];
+            lights = new float[24];
             // Light 1
             // Position
             lights[0] = 0f;
@@ -185,17 +188,22 @@ namespace Template
             lights[5] = 4f;
             lights[6] = 4f;
             lights[7] = 0f;
+
+            lights[8] = direction.X;
+            lights[9] = direction.Y;
+            lights[10] = 0f;
+            lights[11] = 0f;
             //sunlight
             // Position
-            lights[8] = -0.1f;
-            lights[9] = -0.1f;
-            lights[10] = -19f;
-            lights[11] = 0.0001f;
+            lights[12] = -0.1f;
+            lights[13] = -0.1f;
+            lights[14] = -19f;
+            lights[15] = 0.0001f;
             // Intensity (colour)
-            lights[12] = 200f;
-            lights[13] = 200f;
-            lights[14] = 175f;
-            lights[15] = 0f;
+            lights[16] = 200f;
+            lights[17] = 200f;
+            lights[18] = 175f;
+            lights[19] = 0f;
         }
 
         private void CreatePlaneData()

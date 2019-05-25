@@ -20,6 +20,7 @@ struct Light
 {
 	vec4 pos;
 	vec4 color;
+	vec3 direction;
 };
 
 struct Tri
