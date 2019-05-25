@@ -195,7 +195,8 @@ void main()
 					activ[10] = 0;
 				}
 				light[b].direction = normalize(light[b].direction);
-				light[b].pos = vec4(0, 0, 0, light[b].pos.w);
+				light[b].pos = vec4(0, 0, light[b].pos.z, light[b].pos.w);
+				return;
 			}
 			else if( i < 4) 
 			{
@@ -216,7 +217,8 @@ void main()
 					activ[13] = 0;
 				}
 				light[b].direction = normalize(light[b].direction);
-				light[b].pos = vec4(0, 0, 0, light[b].pos.w);
+				light[b].pos = vec4(0, 0, light[b].pos.z, light[b].pos.w);
+				return;
 				
 			}
 			norm = tri[i].p.normal.xyz;
