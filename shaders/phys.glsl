@@ -46,6 +46,10 @@ layout(std430, binding=1) buffer spheres{
     Sphere sphere[];
 };
 
+layout(std430, binding=5) buffer Activ{
+	float activ[];
+};
+
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 // p1, p2, ball, deltatime
@@ -175,10 +179,40 @@ void main()
 			if(i < 2) 
 			{
 				//linker muur
+				if (activ[0] == 0)
+				{
+					activ[0] = 1;
+					activ[8] = 0;
+				}
+				else if (activ[1] == 0)
+				{
+					activ[1] = 1;
+					activ[9] = 0;
+				}
+				else if (activ[2] == 0)
+				{
+					activ[2] = 1;
+					activ[10] = 0;
+				}
 			}
 			else if( i < 4) 
 			{
 				//rechter muur
+				if (activ[3] == 0)
+				{
+					activ[3] = 1;
+					activ[11] = 0;
+				}
+				else if (activ[4] == 0)
+				{
+					activ[4] = 1;
+					activ[12] = 0;
+				}
+				else if (activ[5] == 0)
+				{
+					activ[5] = 1;
+					activ[13] = 0;
+				}
 			}
 			norm = tri[i].p.normal.xyz;
 			break;

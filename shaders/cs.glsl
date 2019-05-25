@@ -212,7 +212,6 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 
 		if (suc) 
 		{
-					
 			succ = true;
 			hitPos = sphere[i].pos.xyz;
 			hitColor = sphere[i].color;
@@ -264,21 +263,21 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 				{
 					continue;
 				}
-				if(dot(norm,  light[j].pos.xyz - rayCastHit) < 0) 
+				if(dot(norm, light[j].pos.xyz - rayCastHit) < 0) 
 				{
 					continue;
 				}
 				vec3 shadowOrigin = rayCastHit + normalize(norm) * 0.0001f;
 				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
-				bool intersectOther;
+				bool intersectOther = false;
 
 				for(int k=0;k<sphere.length();k++)
 				{
+					vec3 notimp;
 					if(activ[k] == 0) 
 					{
 						continue;
 					}
-					vec3 notimp;
 									
 					IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
 
@@ -330,7 +329,7 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 
 void main() 
 {
-	uint aa = 3;
+	uint aa = 2;
 	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
 	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
