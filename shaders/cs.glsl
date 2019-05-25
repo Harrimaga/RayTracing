@@ -61,6 +61,10 @@ layout(std430, binding=4) readonly buffer tries{
 	Tri tri[];
 };
 
+layout(std430, binding=5) buffer Activ{
+	float activ[];
+};
+
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 void IntersectSphere(in vec4 s, inout Ray ray, out vec3 intersectionPoint, out bool success)
@@ -198,6 +202,10 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	}
 	for(int i=0;i<sphere.length();i++)//intersect Spheres
 	{
+		if(activ[i]==0) 
+		{
+			continue;
+		}
 		bool suc;
 		vec3 rayCasthit;
 		IntersectSphere(sphere[i].pos, primaryRay, rayCasthit, suc);
@@ -214,6 +222,10 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	}
 	for(int i=0;i<light.length();i++)//intersect lights
 	{
+		if(activ[i + sphere.length()]==0) 
+		{
+			continue;
+		}
 		bool suc;
 		vec3 rayCasthit;
 		IntersectSphere(light[i].pos, primaryRay, rayCasthit, suc);
@@ -248,6 +260,10 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 			}
 			for(int j=0;j<light.length();j++)
 			{
+				if(activ[j + sphere.length()]==0) 
+				{
+					continue;
+				}
 				if(dot(norm,  light[j].pos.xyz - rayCastHit) < 0) 
 				{
 					continue;
