@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using INFOGR2019Tmpl8;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 
 namespace Template
 {
@@ -14,12 +15,16 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, ssbo_tri, u_camPos, u_scTL, u_scTR, u_scDL, u_img, img;
+        public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, ssbo_tri, u_camPos, u_scTL, u_scTR, u_scDL, u_img, u_positions, u_input, img;
         public float[] colors, spheres, cam, lights, planes, tries;
+        public Vector4 input, positions;
+        public DateTime time;
 		// initialize
 		public void Init()
 		{
-            camera = new Camera(new Vector3(0, 0, -8), new Vector3(0, 0, 2), screen);
+            camera = new Camera(new Vector3(0, 0, -8.5f), new Vector3(0, 0, 2), screen);
+
+            time = DateTime.Now;
 
             colors = new float[screen.width * screen.height * 4];
             img = CreateTex(screen.width, screen.height);
@@ -32,6 +37,12 @@ namespace Template
 
             CreateTriData();
 
+            CreatePlayer1();
+
+            CreatePlayer2();
+
+            
+
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
             LoadShader("../../shaders/phys.glsl", ShaderType.ComputeShader, prog2, out physID);
@@ -43,6 +54,8 @@ namespace Template
             u_scTR = GL.GetUniformLocation(prog, "screenTR");
             u_scDL = GL.GetUniformLocation(prog, "screenDL");
             u_img = GL.GetUniformLocation(prog, "img");
+            u_positions = GL.GetUniformLocation(prog2, "positions");
+            u_input = GL.GetUniformLocation(prog2, "input");
 
             Createssbo(ref ssbo_col, colors, 0);
             Createssbo(ref ssbo_sphere, spheres, 1);
@@ -56,7 +69,25 @@ namespace Template
             //screen.Clear( 0 );
 
             GL.UseProgram(prog2);
-            GL.DispatchCompute(lights.Length, 1, 1);
+
+            TimeSpan deltaTime = DateTime.Now - time;
+            time = DateTime.Now;
+
+            positions = new Vector4(8, 20, 0, deltaTime.Milliseconds);
+
+            KeyboardState state = Keyboard.GetState();
+            input = new Vector4
+            {
+                X = state.IsKeyDown(Key.W) ? 1 : 0,
+                Y = state.IsKeyDown(Key.S) ? 1 : 0,
+                Z = state.IsKeyDown(Key.Up) ? 1 : 0,
+                W = state.IsKeyDown(Key.Down) ? 1 : 0
+            };
+
+            GL.Uniform4(u_positions, ref positions);
+            GL.Uniform4(u_input, ref input);
+
+            GL.DispatchCompute(1, 1, 1);
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
             GL.UseProgram(prog);
@@ -115,29 +146,29 @@ namespace Template
 
         private void CreateSphereData()
         {
-            spheres = new float[16];
-            // Sphere 1: Red
-            // Position
-            spheres[0] = -0.5f;
-            spheres[1] = -1.5f;
-            spheres[2] = 0f;
-            //Radius
-            spheres[3] = 1f;
-            //Colour
-            spheres[4] = 1f; //R
-            spheres[5] = 1f; //G
-            spheres[6] = 1f; //B
-            spheres[7] = 0.1f; //A
+            spheres = new float[8];
+            // // Sphere 1: Red
+            // // Position
+            // spheres[0] = -0.5f;
+            // spheres[1] = -1.5f;
+            // spheres[2] = 0f;
+            // //Radius
+            // spheres[3] = 1f;
+            // //Colour
+            // spheres[4] = 1f; //R
+            // spheres[5] = 1f; //G
+            // spheres[6] = 1f; //B
+            // spheres[7] = 0.1f; //A
 
-            // Sphere 2: Green
-            spheres[8] = 0.5f;
-            spheres[9] = 0.5f;
-            spheres[10] = 0f;
-            spheres[11] = 0.5f;
-            spheres[12] = 1f;
-            spheres[13] = 0.5f;
-            spheres[14] = 1f;
-            spheres[15] = 0.5f;
+            // // Sphere 2: Green
+            // spheres[8] = 0.5f;
+            // spheres[9] = 0.5f;
+            // spheres[10] = 0f;
+            // spheres[11] = 0.5f;
+            // spheres[12] = 1f;
+            // spheres[13] = 0.5f;
+            // spheres[14] = 1f;
+            // spheres[15] = 0.5f;
         }
 
         private void CreateLightData()
@@ -145,9 +176,9 @@ namespace Template
             lights = new float[16];
             // Light 1
             // Position
-            lights[0] = 0.0f;
-            lights[1] = 0.5f;
-            lights[2] = -0.75f;
+            lights[0] = 0f;
+            lights[1] = 0f;
+            lights[2] = -1.5f;
             lights[3] = 0.1f;
             // Intensity (colour)
             lights[4] = 4f;
@@ -156,9 +187,9 @@ namespace Template
             lights[7] = 0f;
             //sunlight
             // Position
-            lights[8] = -8f;
-            lights[9] = -3f;
-            lights[10] = -15f;
+            lights[8] = -0f;
+            lights[9] = -0f;
+            lights[10] = -19f;
             lights[11] = 0.1f;
             // Intensity (colour)
             lights[12] = 200f;
@@ -190,20 +221,66 @@ namespace Template
 
         private void CreateTriData()
         {
-            tries = new float[8*24];
+            tries = new float[32*24];
             //left wall
-            AddTri(new Vector3(-3.5f, -2f, -0), new Vector3(-3.5f, 2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 0);
-            AddTri(new Vector3(-3.5f, -2f, -0), new Vector3(-3.5f, 2f, -4f), new Vector3(-3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 1);
+            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 0);
+            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector3(-3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 1);
             //right wall
-            AddTri(new Vector3(3.5f, -2f, -0), new Vector3(3.5f, 2f, -4f), new Vector3(3.5f, 2f, 0f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 2);
-            AddTri(new Vector3(3.5f, -2f, -0), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 3);
+            AddTri(new Vector3(3.5f, -2f, 0), new Vector3(3.5f, 2f, -4f), new Vector3(3.5f, 2f, 0f), new Vector4(0.85f, 0.85f, 1f, 0f), 2);
+            AddTri(new Vector3(3.5f, -2f, 0), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 3);
             //up wall
-            AddTri(new Vector3(-3.5f, -2f, -0f), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, -2f, -0f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 4);
-            AddTri(new Vector3(-3.5f, -2f, -0), new Vector3(-3.5f, -2f, -4f), new Vector3(3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 5);
+            AddTri(new Vector3(-3.5f, -2f, 0f), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, -2f, -0f), new Vector4(0.85f, 0.85f, 1f, 0f), 4);
+            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, -2f, -4f), new Vector3(3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 5);
             //down wall
-            AddTri(new Vector3(-3.5f, 2f, -0f), new Vector3(3.5f, 2f, -0f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 6);
-            AddTri(new Vector3(-3.5f, 2f, -0), new Vector3(3.5f, 2f, -4f), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0.2f), 7);
+            AddTri(new Vector3(-3.5f, 2f, 0f), new Vector3(3.5f, 2f, 0f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 6);
+            AddTri(new Vector3(-3.5f, 2f, 0), new Vector3(3.5f, 2f, -4f), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 7);
+        }
 
+        private void CreatePlayer1()
+        {
+            int tNum = 8;
+            //front
+            AddTri(new Vector3(-3.1f, -0.75f, -1.6f), new Vector3(-3.1f, 0.75f, -1.6f), new Vector3(-3.3f, -0.75f, -1.6f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            AddTri(new Vector3(-3.3f, -0.75f, -1.6f), new Vector3(-3.1f, 0.75f, -1.6f), new Vector3(-3.3f, 0.75f, -1.6f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            //top
+            AddTri(new Vector3(-3.1f, -0.75f, -1.6f), new Vector3(-3.3f, -0.75f, -1.6f), new Vector3(-3.1f, -0.75f, -1.4f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            AddTri(new Vector3(-3.3f, -0.75f, -1.6f), new Vector3(-3.3f, -0.75f, -1.4f), new Vector3(-3.1f, -0.75f, -1.4f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            //bottom
+            AddTri(new Vector3(-3.1f, 0.75f, -1.6f), new Vector3(-3.1f, 0.75f, -1.4f), new Vector3(-3.3f, 0.75f, -1.6f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            AddTri(new Vector3(-3.3f, 0.75f, -1.6f), new Vector3(-3.1f, 0.75f, -1.4f), new Vector3(-3.3f, 0.75f, -1.4f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            //back
+            AddTri(new Vector3(-3.1f, -0.75f, -1.4f), new Vector3(-3.3f, -0.75f, -1.4f), new Vector3(-3.1f, 0.75f, -1.4f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            AddTri(new Vector3(-3.3f, -0.75f, -1.4f), new Vector3(-3.3f, 0.75f, -1.4f), new Vector3(-3.1f, 0.75f, -1.4f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            //right
+            AddTri(new Vector3(-3.1f, 0.75f, -1.6f), new Vector3(-3.1f, -0.75f, -1.4f), new Vector3(-3.1f, 0.75f, -1.4f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            AddTri(new Vector3(-3.1f, -0.75f, -1.4f), new Vector3(-3.1f, 0.75f, -1.6f), new Vector3(-3.1f, -0.75f, -1.6f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            //left
+            AddTri(new Vector3(-3.3f, 0.75f, -1.6f), new Vector3(-3.3f, 0.75f, -1.4f), new Vector3(-3.3f, -0.75f, -1.4f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+            AddTri(new Vector3(-3.3f, -0.75f, -1.4f), new Vector3(-3.3f, -0.75f, -1.6f), new Vector3(-3.3f, 0.75f, -1.6f), new Vector4(1, 0.2f, 0.2f, 0), tNum++);
+
+        }
+
+        private void CreatePlayer2() 
+        {
+            int tNum = 20;
+            //front
+            AddTri(new Vector3(3.3f, -0.75f, -1.6f), new Vector3(3.3f, 0.75f, -1.6f), new Vector3(3.1f, -0.75f, -1.6f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            AddTri(new Vector3(3.1f, -0.75f, -1.6f), new Vector3(3.3f, 0.75f, -1.6f), new Vector3(3.1f, 0.75f, -1.6f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            //top
+            AddTri(new Vector3(3.3f, -0.75f, -1.6f), new Vector3(3.1f, -0.75f, -1.6f), new Vector3(3.3f, -0.75f, -1.4f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            AddTri(new Vector3(3.1f, -0.75f, -1.6f), new Vector3(3.1f, -0.75f, -1.4f), new Vector3(3.3f, -0.75f, -1.4f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            //bottom
+            AddTri(new Vector3(3.3f, 0.75f, -1.6f), new Vector3(3.3f, 0.75f, -1.4f), new Vector3(3.1f, 0.75f, -1.6f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            AddTri(new Vector3(3.1f, 0.75f, -1.6f), new Vector3(3.3f, 0.75f, -1.4f), new Vector3(3.1f, 0.75f, -1.4f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            //back
+            AddTri(new Vector3(3.3f, -0.75f, -1.4f), new Vector3(3.1f, -0.75f, -1.4f), new Vector3(3.3f, 0.75f, -1.4f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            AddTri(new Vector3(3.1f, -0.75f, -1.4f), new Vector3(3.1f, 0.75f, -1.4f), new Vector3(3.3f, 0.75f, -1.4f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            //right
+            AddTri(new Vector3(3.3f, 0.75f, -1.6f), new Vector3(3.3f, -0.75f, -1.4f), new Vector3(3.3f, 0.75f, -1.4f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            AddTri(new Vector3(3.3f, -0.75f, -1.4f), new Vector3(3.3f, 0.75f, -1.6f), new Vector3(3.3f, -0.75f, -1.6f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            //left
+            AddTri(new Vector3(3.1f, 0.75f, -1.6f), new Vector3(3.1f, 0.75f, -1.4f), new Vector3(3.1f, -0.75f, -1.4f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
+            AddTri(new Vector3(3.1f, -0.75f, -1.4f), new Vector3(3.1f, -0.75f, -1.6f), new Vector3(3.1f, 0.75f, -1.6f), new Vector4(0.2f, 0.2f, 1f, 0), tNum++);
         }
 
         private void AddTri(Vector3 v0, Vector3 v1, Vector3 v2, Vector4 color, int tNum)
