@@ -163,6 +163,38 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	float lightw;
 
 	col = vec4(0, 0, 0, 1);
+	for(int ii=0;ii<plane.length();ii++)//intersect planes
+	{
+		bool suc;
+		vec3 rayCasthit;
+		IntersectPlane(ii, primaryRay, rayCasthit, suc);
+		
+		if (suc)
+		{
+			succ = true;
+			hitColor = plane[ii].color;
+			hitPos = rayCasthit;
+			rayCastHit = rayCasthit;
+			norm = plane[ii].normal.xyz;
+			isLight = false;
+		}
+	}
+	for(int ii=0;ii<tri.length();ii++)//intersect planes
+	{
+		bool suc;
+		vec3 rayCasthit;
+		IntersectTri(ii, primaryRay, rayCasthit, suc);
+		
+		if (suc)
+		{
+			succ = true;
+			hitColor = tri[ii].p.color;
+			hitPos = rayCasthit;
+			rayCastHit = rayCasthit;
+			norm = tri[ii].p.normal.xyz;
+			isLight = false;
+		}
+	}
 	for(int i=0;i<sphere.length();i++)//intersect Spheres
 	{
 		bool suc;
@@ -198,38 +230,6 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 			lightAngle = dot(normalize(rayCasthit - primaryRay.origin), normalize(light[i].pos.xyz - rayCasthit));
 		}
 	}
-	for(int ii=0;ii<plane.length();ii++)//intersect planes
-	{
-		bool suc;
-		vec3 rayCasthit;
-		IntersectPlane(ii, primaryRay, rayCasthit, suc);
-		
-		if (suc)
-		{
-			succ = true;
-			hitColor = plane[ii].color;
-			hitPos = rayCasthit;
-			rayCastHit = rayCasthit;
-			norm = plane[ii].normal.xyz;
-			isLight = false;
-		}
-	}
-	for(int ii=0;ii<tri.length();ii++)//intersect planes
-	{
-		bool suc;
-		vec3 rayCasthit;
-		IntersectTri(ii, primaryRay, rayCasthit, suc);
-		
-		if (suc)
-		{
-			succ = true;
-			hitColor = tri[ii].p.color;
-			hitPos = rayCasthit;
-			rayCastHit = rayCasthit;
-			norm = tri[ii].p.normal.xyz;
-			isLight = false;
-		}
-	}
 	// Shoot shadow rays
 	if(succ) 
 	{
@@ -247,6 +247,10 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 			}
 			for(int j=0;j<light.length();j++)
 			{
+				if(dot(norm,  light[j].pos.xyz - rayCastHit) < 0) 
+				{
+					continue;
+				}
 				vec3 shadowOrigin = rayCastHit + normalize(norm) * 0.0001f;
 				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
 				bool intersectOther;

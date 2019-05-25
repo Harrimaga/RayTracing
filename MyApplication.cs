@@ -55,7 +55,7 @@ namespace Template
             u_scDL = GL.GetUniformLocation(prog, "screenDL");
             u_img = GL.GetUniformLocation(prog, "img");
             u_positions = GL.GetUniformLocation(prog2, "positions");
-            u_input = GL.GetUniformLocation(prog2, "input");
+            u_input = GL.GetUniformLocation(prog2, "inp");
 
             Createssbo(ref ssbo_col, colors, 0);
             Createssbo(ref ssbo_sphere, spheres, 1);
@@ -187,10 +187,10 @@ namespace Template
             lights[7] = 0f;
             //sunlight
             // Position
-            lights[8] = -0f;
-            lights[9] = -0f;
+            lights[8] = -0.1f;
+            lights[9] = -0.1f;
             lights[10] = -19f;
-            lights[11] = 0.1f;
+            lights[11] = 0.0001f;
             // Intensity (colour)
             lights[12] = 200f;
             lights[13] = 200f;
