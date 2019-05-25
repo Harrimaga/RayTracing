@@ -16,7 +16,7 @@ struct Light
 {
 	vec4 pos;
 	vec4 color;
-	vec3 direction;
+	vec4 direction;
 };
 
 struct Tri
@@ -163,7 +163,7 @@ void main()
 		}
 	}
 
-	Ray r = Ray(light[b].pos.xyz, light[0].direction, delta*length(light[0].direction)/1000.0f);
+	Ray r = Ray(light[b].pos.xyz, light[0].direction.xyz, delta*length(light[0].direction.xyz)/1000.0f);
 	vec3 insPoint;
 	bool suc;
 	vec3 norm;
@@ -179,11 +179,11 @@ void main()
 
 	if (suc)
 	{
-		light[0].direction = light[0].direction - 2*dot(norm, light[0].direction)*norm;
-		light[b].pos.xyz = insPoint + light[0].direction*(delta*length(light[0].direction)/1000.0f - r.dis);
+		light[0].direction.xyz = light[0].direction.xyz - 2*dot(norm, light[0].direction.xyz)*norm;
+		light[b].pos.xyz = insPoint + light[0].direction.xyz*(delta*length(light[0].direction.xyz)/1000.0f - r.dis);
 	}
 	else
 	{
-		light[b].pos.xyz += light[0].direction*delta*length(light[0].direction)/1000.0f;
+		light[b].pos.xyz += light[0].direction.xyz*delta*length(light[0].direction.xyz)/1000.0f;
 	}
 }

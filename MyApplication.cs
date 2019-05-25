@@ -30,6 +30,9 @@ namespace Template
             colors = new float[screen.width * screen.height * 4];
             img = CreateTex(screen.width, screen.height);
 
+            Random rnd = new Random();
+            direction = new Vector3((rnd.Next(100) < 50) ? 1 : -1, (float)rnd.NextDouble() * 2 - 1, 0);
+            Vector3.Normalize(direction);
             CreateSphereData();
 
             CreateLightData();
@@ -42,9 +45,6 @@ namespace Template
 
             CreatePlayer2();
 
-            Random rnd = new Random();
-            direction = new Vector3((rnd.Next(100) < 50) ? 1 : -1, (float)rnd.NextDouble() * 2 - 1, 0);
-            Vector3.Normalize(direction);
             
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
