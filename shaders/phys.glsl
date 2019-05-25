@@ -163,7 +163,7 @@ void main()
 		}
 	}
 
-	Ray r = Ray(light[b].pos.xyz, light[0].direction.xyz, delta*length(light[0].direction.xyz)/1000.0f);
+	Ray r = Ray(light[b].pos.xyz, light[0].direction.xyz, delta*length(light[0].direction.xyz)/500.0f);
 	vec3 insPoint;
 	bool suc;
 	vec3 norm;
@@ -172,6 +172,14 @@ void main()
 		IntersectTri(i, r, insPoint, suc, light[b].pos.w);
 		if (suc)
 		{
+			if(i < 2) 
+			{
+				//linker muur
+			}
+			else if( i < 4) 
+			{
+				//rechter muur
+			}
 			norm = tri[i].p.normal.xyz;
 			break;
 		}
@@ -180,10 +188,11 @@ void main()
 	if (suc)
 	{
 		light[0].direction.xyz = light[0].direction.xyz - 2*dot(norm, light[0].direction.xyz)*norm;
-		light[b].pos.xyz = insPoint + light[0].direction.xyz*(delta*length(light[0].direction.xyz)/1000.0f - r.dis);
+		light[0].direction.xyz *= 1.01f;
+		light[b].pos.xyz = insPoint + light[0].direction.xyz*(delta*length(light[0].direction.xyz)/500.0f - r.dis);
 	}
 	else
 	{
-		light[b].pos.xyz += light[0].direction.xyz*delta*length(light[0].direction.xyz)/1000.0f;
+		light[b].pos.xyz += light[0].direction.xyz*delta*length(light[0].direction.xyz)/500.0f;
 	}
 }

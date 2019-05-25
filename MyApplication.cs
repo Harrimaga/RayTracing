@@ -15,8 +15,8 @@ namespace Template
 		// member variables
 		public Surface screen;
         public Camera camera;
-        public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, ssbo_tri, u_camPos, u_scTL, u_scTR, u_scDL, u_img, u_positions, u_input, img;
-        public float[] colors, spheres, cam, lights, planes, tries;
+        public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, ssbo_tri, ssbo_active, u_camPos, u_scTL, u_scTR, u_scDL, u_img, u_positions, u_input, img;
+        public float[] colors, spheres, cam, lights, planes, tries, totalybools;
         public Vector4 input, positions;
         public Vector3 direction;
         public DateTime time;
@@ -45,7 +45,8 @@ namespace Template
 
             CreatePlayer2();
 
-            
+            totalybools = new float[]{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1};
+
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
             LoadShader("../../shaders/phys.glsl", ShaderType.ComputeShader, prog2, out physID);
@@ -65,6 +66,7 @@ namespace Template
             Createssbo(ref ssbo_light, lights, 2);
             Createssbo(ref ssbo_plane, planes, 3);
             Createssbo(ref ssbo_tri, tries, 4);
+            Createssbo(ref ssbo_active, totalybools, 5);
         }
 		// tick: renders one frame
 		public void Tick()
@@ -149,34 +151,22 @@ namespace Template
 
         private void CreateSphereData()
         {
-            spheres = new float[8];
-            // // Sphere 1: Red
-            // // Position
-            // spheres[0] = -0.5f;
-            // spheres[1] = -1.5f;
-            // spheres[2] = 0f;
-            // //Radius
-            // spheres[3] = 1f;
-            // //Colour
-            // spheres[4] = 1f; //R
-            // spheres[5] = 1f; //G
-            // spheres[6] = 1f; //B
-            // spheres[7] = 0.1f; //A
+            int tNum = 0;
+            spheres = new float[8*6];
+            // Player 1 lives:
+            AddSphere(new Vector3(-3f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0.7f), tNum++);
+            AddSphere(new Vector3(-2.5f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0.7f), tNum++);
+            AddSphere(new Vector3(-2f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0.7f), tNum++);
 
-            // // Sphere 2: Green
-            // spheres[8] = 0.5f;
-            // spheres[9] = 0.5f;
-            // spheres[10] = 0f;
-            // spheres[11] = 0.5f;
-            // spheres[12] = 1f;
-            // spheres[13] = 0.5f;
-            // spheres[14] = 1f;
-            // spheres[15] = 0.5f;
+            // Player 2 lives:
+            AddSphere(new Vector3(3f, -1.8f, -0.2f), 0.2f, new Vector4(0.25f, 0.25f, 0.5f, 0.7f), tNum++);
+            AddSphere(new Vector3(2.5f, -1.8f, -0.2f), 0.2f, new Vector4(0.25f, 0.25f, 0.5f, 0.7f), tNum++);
+            AddSphere(new Vector3(2f, -1.8f, -0.2f), 0.2f, new Vector4(0.25f, 0.25f, 0.5f, 0.7f), tNum++);
         }
 
         private void CreateLightData()
         {
-            lights = new float[24];
+            lights = new float[12*8];
             // Light 1
             // Position
             lights[0] = 0f;
@@ -184,9 +174,9 @@ namespace Template
             lights[2] = -1.5f;
             lights[3] = 0.1f;
             // Intensity (colour)
-            lights[4] = 4f;
-            lights[5] = 4f;
-            lights[6] = 4f;
+            lights[4] = 3f;
+            lights[5] = 3f;
+            lights[6] = 3f;
             lights[7] = 0f;
 
             lights[8] = direction.X;
@@ -200,10 +190,47 @@ namespace Template
             lights[14] = -19f;
             lights[15] = 0.0001f;
             // Intensity (colour)
-            lights[16] = 200f;
-            lights[17] = 200f;
-            lights[18] = 175f;
-            lights[19] = 0f;
+            lights[16] = 100f;
+            lights[17] = 100f;
+            lights[18] = 100f;
+            lights[19] = 100f;
+            
+            int tNum = 2;
+            // Player 1 lives:
+            AddLight(new Vector3(-3f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0f), tNum++);
+            AddLight(new Vector3(-2.5f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0f), tNum++);
+            AddLight(new Vector3(-2f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0f), tNum++);
+
+            // Player 2 lives:
+            AddLight(new Vector3(3f, -1.8f, -0.2f), 0.2f, new Vector4(0.25f, 0.25f, 0.5f, 0f), tNum++);
+            AddLight(new Vector3(2.5f, -1.8f, -0.2f), 0.2f, new Vector4(0.25f, 0.25f, 0.5f, 0f), tNum++);
+            AddLight(new Vector3(2f, -1.8f, -0.2f), 0.2f, new Vector4(0.25f, 0.25f, 0.5f, 0f), tNum++);
+        }
+
+        private void AddSphere(Vector3 pos, float radius, Vector4 colour, int tNum) 
+        {
+            tNum *= 8;
+
+            spheres[tNum] = pos.X;
+            spheres[tNum + 1] = pos.Y;
+            spheres[tNum + 2] = pos.Z;
+            spheres[tNum + 3] = radius;
+            spheres[tNum + 4] = colour.X;
+            spheres[tNum + 5] = colour.Y;
+            spheres[tNum + 6] = colour.Z;
+            spheres[tNum + 7] = colour.W;
+        }
+
+        private void AddLight(Vector3 pos, float radius, Vector4 color, int tNum) 
+        {
+            tNum *= 12;
+            lights[tNum] = pos.X;
+            lights[tNum + 1] = pos.Y;
+            lights[tNum + 2] = pos.Z;
+            lights[tNum + 3] = radius;
+            lights[tNum + 4] = color.X;
+            lights[tNum + 5] = color.Y;
+            lights[tNum + 6] = color.Z;
         }
 
         private void CreatePlaneData()
