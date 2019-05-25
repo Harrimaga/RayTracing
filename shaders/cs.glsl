@@ -245,7 +245,7 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	// Shoot shadow rays
 	if(succ) 
 	{
-		if(isLight) {
+		if(false) {
 			totdis++;
 			col += hitColor * lightAngle / (totdis*totdis);
 			hitColor = vec4(1, 1, 1, 0);
