@@ -274,6 +274,10 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 
 				for(int k=0;k<sphere.length();k++)
 				{
+					if(activ[k] == 0) 
+					{
+						continue;
+					}
 					vec3 notimp;
 									
 					IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
