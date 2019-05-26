@@ -181,7 +181,7 @@ void main()
 			bool bb = false;
 			vec3 inpoint;
 
-			IntersectTri(i, r, inpoint, bb, light[b].pos.w);
+			IntersectTri(i, r, inpoint, bb, 0);
 			
 			if (bb) {
 				suc = true;
