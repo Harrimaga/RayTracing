@@ -80,7 +80,6 @@ void IntersectSphere(in vec4 s, inout Ray ray, out vec3 intersectionPoint, out b
 	}
 	vec3 q = c - t * ray.direction;
 	float p2 = dot(q, q);
-	float d2 = dot(c, c) - t * t;
 
 	if (p2 > s.w * s.w) 
 	{
@@ -100,6 +99,47 @@ void IntersectSphere(in vec4 s, inout Ray ray, out vec3 intersectionPoint, out b
 
 	intersectionPoint = vec3(0, 0, 0);
 	success = false;
+	return;
+}
+
+void IntersectSphere(in vec4 s, in Ray ray, out bool success)
+{
+	vec3 c = s.xyz - ray.origin;
+	float t = dot(c, ray.direction);
+	
+	if (t < 0) 
+	{
+		success = false;
+		if(dot(c,c) <= s.w*s.w) 
+		{
+			success = true;
+		}
+		return;
+	}
+	vec3 q = c - t * ray.direction;
+	float p2 = dot(q, q);
+
+	if (p2 > s.w * s.w) 
+	{
+		success = false;
+		if(dot(c,c) <= s.w*s.w) 
+		{
+			success = true;
+		}
+		return;
+	}
+
+	t -= sqrt(s.w * s.w - p2);
+	if ((t < ray.dis) && (t > 0))
+	{
+		success = true;
+		return;
+	}
+
+	success = false;
+	if(dot(c,c) <= s.w*s.w) {
+		success = true;
+	}
 	return;
 }
 
@@ -127,10 +167,7 @@ void IntersectPlane(in int p, inout Ray ray, out vec3 intersectionPoint, out boo
 void IntersectTri(in int tt, inout Ray ray, out vec3 intersectionPoint, out bool success) 
 {
 	//same code as intersect plane
-	float d = -dot(tri[tt].p.center, tri[tt].p.normal);
-	float e = dot(ray.origin, tri[tt].p.normal.xyz);
-	float f = dot(ray.direction, tri[tt].p.normal.xyz);
-	float t = -(e + d) / f;
+	float t = -(dot(ray.origin, tri[tt].p.normal.xyz) - dot(tri[tt].p.center, tri[tt].p.normal)) / dot(ray.direction, tri[tt].p.normal.xyz);
 
 	if (t > 0 && t < ray.dis)
 	{
@@ -186,6 +223,24 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	}
 	for(int ii=0;ii<tri.length();ii++)//intersect planes
 	{
+		if(ii == 8) 
+		{
+			bool b;
+			IntersectSphere(vec4(-3.2f, tri[ii].v0.y+0.75f, -1.5f, -1.6f),primaryRay, b);
+			if(!b) {
+				ii+=11;
+				continue;
+			}
+		}
+		if(ii == 20) 
+		{
+			bool b;
+			IntersectSphere(vec4(3.2f, tri[ii].v0.y+0.75f, -1.5f, -1.6f),primaryRay, b);
+			if(!b) 
+			{
+				break;
+			}
+		}
 		bool suc;
 		vec3 rayCasthit;
 		IntersectTri(ii, primaryRay, rayCasthit, suc);
@@ -234,7 +289,6 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 					
 			succ = true;
 			hitPos = light[i].pos.xyz;
-			float rad = light[i].pos.w/light[i].pos.w;
 			hitColor = light[i].color;
 			rayCastHit = rayCasthit;
 			isLight = true;
@@ -245,84 +299,103 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 	// Shoot shadow rays
 	if(succ) 
 	{
-		if(false) {
+		if(isLight) {
 			totdis++;
-			col += hitColor * lightAngle / (totdis*totdis);
+			col += hitColor * lightAngle / (lightw);
 			hitColor = vec4(1, 1, 1, 0);
 		}
-		else {
 			if(hitColor.w > 0) 
+		{
+			//reflect
+			vec3 dir = primaryRay.direction - 2*dot(norm, primaryRay.direction)*norm;
+			refRay = Ray(rayCastHit + dir*0.0001f, dir, 999999);
+		}
+		for(int j=0;j<light.length();j++)
+		{
+			if(activ[j + sphere.length()]==0) 
 			{
-				//reflect
-				vec3 dir = primaryRay.direction - 2*dot(norm, primaryRay.direction)*norm;
-				refRay = Ray(rayCastHit + dir*0.0001f, dir, 999999);
+				continue;
 			}
-			for(int j=0;j<light.length();j++)
+			if(dot(norm, light[j].pos.xyz - rayCastHit) < 0) 
 			{
-				if(activ[j + sphere.length()]==0) 
-				{
-					continue;
-				}
-				if(dot(norm, light[j].pos.xyz - rayCastHit) < 0) 
-				{
-					continue;
-				}
-				vec3 shadowOrigin = rayCastHit + normalize(norm) * 0.0001f;
-				Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
-				bool intersectOther = false;
+				continue;
+			}
+			vec3 shadowOrigin = rayCastHit + normalize(norm) * 0.0001f;
+			Ray shadowRay = Ray(shadowOrigin, normalize(light[j].pos.xyz - rayCastHit), length(light[j].pos.xyz - rayCastHit));
+			bool intersectOther = false;
 
-				for(int k=0;k<sphere.length();k++)
+			vec4 lightval = (1-hitColor.w)*light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+			if(dot(lightval, lightval) < 0.0001f) 
+			{
+				continue;
+			}
+
+			for(int k=0;k<sphere.length();k++)
+			{
+				vec3 notimp;
+				if(activ[k] == 0) 
 				{
-					vec3 notimp;
-					if(activ[k] == 0) 
-					{
+					continue;
+				}
+									
+				IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
+
+				if (intersectOther)
+				{
+					break;
+				}
+			}
+			if (intersectOther)
+			{
+				continue;
+			}
+			for(int k=0;k<tri.length();k++)
+			{
+				if(k == 8) 
+				{
+					bool b;
+					IntersectSphere(vec4(-3.2f, tri[k].v0.y+0.75f, -1.5f, -1.6f),primaryRay, b);
+					if(!b) {
+						k+=11;
 						continue;
 					}
-									
-					IntersectSphere(sphere[k].pos, shadowRay, notimp, intersectOther);
-
-					if (intersectOther)
+				}
+				if(k == 20) 
+				{
+					bool b;
+					IntersectSphere(vec4(3.2f, tri[k].v0.y+0.75f, -1.5f, -1.6f),primaryRay, b);
+					if(!b) 
 					{
 						break;
 					}
 				}
+				vec3 notimp;
+								
+				IntersectTri(k, shadowRay, notimp, intersectOther);
 				if (intersectOther)
 				{
-					continue;
-				}
-				for(int k=0;k<plane.length();k++)
-				{
-					vec3 notimp;
-									
-					IntersectPlane(k, shadowRay, notimp, intersectOther);
-
-					if (intersectOther)
-					{
-						break;
-					}
-				}
-				if (intersectOther)
-				{
-					continue;
-				}
-				for(int k=0;k<tri.length();k++)
-				{
-					vec3 notimp;
-									
-					IntersectTri(k, shadowRay, notimp, intersectOther);
-
-					if (intersectOther)
-					{
-						break;
-					}
-				}
-
-				if (!intersectOther)
-				{
-					col += (1-hitColor.w)*light[j].color * hitColor * dot(norm, normalize( light[j].pos.xyz - rayCastHit))/(shadowRay.dis*shadowRay.dis);
+					break;
 				}
 			}
-		}
+			if (!intersectOther)
+			{
+				col += lightval;
+			}
+			for(int k=0;k<plane.length();k++)
+			{
+				vec3 notimp;
+								
+				IntersectPlane(k, shadowRay, notimp, intersectOther);
+				if (intersectOther)
+				{
+					break;
+				}
+			}
+			if (intersectOther)
+			{
+				continue;
+			}
+		}	
 		totdis = primaryRay.dis;
 	}
 }

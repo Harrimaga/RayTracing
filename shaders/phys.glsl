@@ -169,14 +169,30 @@ void main()
 
 	Ray r = Ray(light[b].pos.xyz, light[0].direction.xyz, delta*length(light[0].direction.xyz)/500.0f);
 	vec3 insPoint;
-	bool suc;
+	bool suc = true;
 	vec3 norm;
-	for(int i=0;i<tri.length();i++)
+	int ip = -1;
+	while(suc) 
 	{
-		IntersectTri(i, r, insPoint, suc, light[b].pos.w);
+		suc = false;
+		float disNow = r.dis;
+		for(int i=0;i<tri.length();i++)
+		{
+			bool bb = false;
+			vec3 inpoint;
+
+			IntersectTri(i, r, inpoint, bb, light[b].pos.w);
+			
+			if (bb) {
+				suc = true;
+				ip = i;
+				insPoint = inpoint;
+			}
+		}
+
 		if (suc)
 		{
-			if(i < 2) 
+			if(ip < 2) 
 			{
 				//linker muur
 				if (activ[0] == 0)
@@ -198,7 +214,7 @@ void main()
 				light[b].pos = vec4(0, 0, light[b].pos.z, light[b].pos.w);
 				return;
 			}
-			else if( i < 4) 
+			else if( ip < 4) 
 			{
 				//rechter muur
 				if (activ[3] == 0)
@@ -221,19 +237,24 @@ void main()
 				return;
 				
 			}
-			norm = tri[i].p.normal.xyz;
-			break;
+			norm = tri[ip].p.normal.xyz;
+			
+			if (ip>=p2) 
+			{
+				norm = normalize(vec3(norm.x*4, insPoint.y-(tri[p2].v0.y+0.75), 0));
+			}
+			else if (ip >= p1)
+			{
+				norm = normalize(vec3(norm.x*4, insPoint.y-(tri[p1].v0.y+0.75), 0));
+			}
+			light[0].direction.xyz = light[0].direction.xyz - 2*dot(norm, light[0].direction.xyz)*norm;
+			light[0].direction.xyz *= 1.01f;
+			light[0].pos.xyz = insPoint - r.direction.xyz*0.001f;
+			r = Ray(light[0].pos.xyz, light[0].direction.xyz, disNow - r.dis);
 		}
-	}
-
-	if (suc)
-	{
-		light[0].direction.xyz = light[0].direction.xyz - 2*dot(norm, light[0].direction.xyz)*norm;
-		light[0].direction.xyz *= 1.01f;
-		light[b].pos.xyz = insPoint + light[0].direction.xyz*(delta*length(light[0].direction.xyz)/500.0f - r.dis);
-	}
-	else
-	{
-		light[b].pos.xyz += light[0].direction.xyz*delta*length(light[0].direction.xyz)/500.0f;
+		else
+		{
+			light[b].pos.xyz += light[0].direction.xyz*delta*length(light[0].direction.xyz)/500.0f;
+		}
 	}
 }
