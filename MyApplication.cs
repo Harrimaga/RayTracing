@@ -255,9 +255,9 @@ namespace Template
             planes[6] = -1f;
             planes[7] = 0f;
             // Colour
-            planes[8] = 1f;
+            planes[8] = 0.6f;
             planes[9] = 0.75f;
-            planes[10] = 0.6f;
+            planes[10] = 1f;
             planes[11] = 0.8f;
         }
 
@@ -265,17 +265,17 @@ namespace Template
         {
             tries = new float[32 * 24];
             //left wall
-            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 0);
-            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector3(-3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 1);
+            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector4(1f, 0.85f, 0.85f, 0f), 0);
+            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector3(-3.5f, -2f, -4f), new Vector4(1f, 0.85f, 0.85f, 0f), 1);
             //right wall
-            AddTri(new Vector3(3.5f, -2f, 0), new Vector3(3.5f, 2f, -4f), new Vector3(3.5f, 2f, 0f), new Vector4(0.85f, 0.85f, 1f, 0f), 2);
-            AddTri(new Vector3(3.5f, -2f, 0), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 3);
+            AddTri(new Vector3(3.5f, -2f, 0), new Vector3(3.5f, 2f, -4f), new Vector3(3.5f, 2f, 0f), new Vector4(1f, 0.85f, 0.85f, 0f), 2);
+            AddTri(new Vector3(3.5f, -2f, 0), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, 2f, -4f), new Vector4(1f, 0.85f, 0.85f, 0f), 3);
             //up wall
-            AddTri(new Vector3(-3.5f, -2f, 0f), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, -2f, -0f), new Vector4(0.85f, 0.85f, 1f, 0f), 4);
-            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, -2f, -4f), new Vector3(3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 5);
+            AddTri(new Vector3(-3.5f, -2f, 0f), new Vector3(3.5f, -2f, -4f), new Vector3(3.5f, -2f, -0f), new Vector4(1f, 0.85f, 0.85f, 0f), 4);
+            AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, -2f, -4f), new Vector3(3.5f, -2f, -4f), new Vector4(1f, 0.85f, 0.85f, 0f), 5);
             //down wall
-            AddTri(new Vector3(-3.5f, 2f, 0f), new Vector3(3.5f, 2f, 0f), new Vector3(3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 6);
-            AddTri(new Vector3(-3.5f, 2f, 0), new Vector3(3.5f, 2f, -4f), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 7);
+            AddTri(new Vector3(-3.5f, 2f, 0f), new Vector3(3.5f, 2f, 0f), new Vector3(3.5f, 2f, -4f), new Vector4(1f, 0.85f, 0.85f, 0f), 6);
+            AddTri(new Vector3(-3.5f, 2f, 0), new Vector3(3.5f, 2f, -4f), new Vector3(-3.5f, 2f, -4f), new Vector4(1f, 0.85f, 0.85f, 0f), 7);
         }
 
         private void CreatePlayer1()
