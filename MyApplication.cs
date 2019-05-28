@@ -10,19 +10,20 @@ using OpenTK.Input;
 
 namespace Template
 {
-	class MyApplication
-	{
-		// member variables
-		public Surface screen;
+    class MyApplication
+    {
+        // member variables
+        public Surface screen;
         public Camera camera;
         public int prog, prog2, csID, physID, ssbo_col, ssbo_sphere, ssbo_light, ssbo_plane, ssbo_tri, ssbo_active, u_camPos, u_scTL, u_scTR, u_scDL, u_img, u_positions, u_input, img;
         public float[] colors, spheres, cam, lights, planes, tries, totalybools;
         public Vector4 input, positions;
         public Vector3 direction;
         public DateTime time;
-		// initialize
-		public void Init()
-		{
+        public bool pause = true, spacePrev = false;
+        // initialize
+        public void Init()
+        {
             camera = new Camera(new Vector3(0, 0, -8.5f), new Vector3(0, 0, 2), screen);
 
             time = DateTime.Now;
@@ -45,7 +46,7 @@ namespace Template
 
             CreatePlayer2();
 
-            totalybools = new float[]{0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1};
+            totalybools = new float[] { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 };
 
             prog2 = GL.CreateProgram();
             prog = GL.CreateProgram();
@@ -68,42 +69,48 @@ namespace Template
             Createssbo(ref ssbo_tri, tries, 4);
             Createssbo(ref ssbo_active, totalybools, 5);
         }
-		// tick: renders one frame
-		public void Tick()
-		{
+        // tick: renders one frame
+        public void Tick()
+        {
             //screen.Clear( 0 );
-
-            GL.UseProgram(prog2);
-
+            KeyboardState state = Keyboard.GetState();
+            if (!state.IsKeyDown(Key.Space) && spacePrev)
+            {
+                pause = !pause;
+            }
+            spacePrev = state.IsKeyDown(Key.Space);
             TimeSpan deltaTime = DateTime.Now - time;
             time = DateTime.Now;
-
-            positions = new Vector4(8, 20, 0, deltaTime.Milliseconds);
-
-            KeyboardState state = Keyboard.GetState();
-            input = new Vector4
+            if (!pause)
             {
-                X = state.IsKeyDown(Key.W) ? 1 : 0,
-                Y = state.IsKeyDown(Key.S) ? 1 : 0,
-                Z = state.IsKeyDown(Key.Up) ? 1 : 0,
-                W = state.IsKeyDown(Key.Down) ? 1 : 0
-            };
+                GL.UseProgram(prog2);
 
-            GL.Uniform4(u_positions, ref positions);
-            GL.Uniform4(u_input, ref input);
 
-            GL.DispatchCompute(1, 1, 1);
-            GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
+                positions = new Vector4(8, 20, 0, deltaTime.Milliseconds);
 
+                input = new Vector4
+                {
+                    X = state.IsKeyDown(Key.W) ? 1 : 0,
+                    Y = state.IsKeyDown(Key.S) ? 1 : 0,
+                    Z = state.IsKeyDown(Key.Up) ? 1 : 0,
+                    W = state.IsKeyDown(Key.Down) ? 1 : 0
+                };
+
+                GL.Uniform4(u_positions, ref positions);
+                GL.Uniform4(u_input, ref input);
+
+                GL.DispatchCompute(1, 1, 1);
+                GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
+            }
             GL.UseProgram(prog);
-                
+
             GL.Uniform3(u_camPos, ref camera.position);
             GL.Uniform3(u_scTL, ref camera.screen[0]);
             GL.Uniform3(u_scTR, ref camera.screen[1]);
             GL.Uniform3(u_scDL, ref camera.screen[2]);
             GL.Uniform1(u_img, 0);
 
-            GL.DispatchCompute(screen.width/8, screen.height/8, 1);
+            GL.DispatchCompute(screen.width / 8, screen.height / 8, 1);
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
         }
 
@@ -152,7 +159,7 @@ namespace Template
         private void CreateSphereData()
         {
             int tNum = 0;
-            spheres = new float[8*6];
+            spheres = new float[8 * 6];
             // Player 1 lives:
             AddSphere(new Vector3(-3f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0.7f), tNum++);
             AddSphere(new Vector3(-2.5f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0.7f), tNum++);
@@ -166,7 +173,7 @@ namespace Template
 
         private void CreateLightData()
         {
-            lights = new float[12*8];
+            lights = new float[12 * 8];
             // Light 1
             // Position
             lights[0] = 0f;
@@ -194,7 +201,7 @@ namespace Template
             lights[17] = 100f;
             lights[18] = 100f;
             lights[19] = 100f;
-            
+
             int tNum = 2;
             // Player 1 lives:
             AddLight(new Vector3(-3f, -1.8f, -0.2f), 0.2f, new Vector4(0.5f, 0.25f, 0.25f, 0f), tNum++);
@@ -207,7 +214,7 @@ namespace Template
             AddLight(new Vector3(2f, -1.8f, -0.2f), 0.2f, new Vector4(0.25f, 0.25f, 0.5f, 0f), tNum++);
         }
 
-        private void AddSphere(Vector3 pos, float radius, Vector4 colour, int tNum) 
+        private void AddSphere(Vector3 pos, float radius, Vector4 colour, int tNum)
         {
             tNum *= 8;
 
@@ -221,7 +228,7 @@ namespace Template
             spheres[tNum + 7] = colour.W;
         }
 
-        private void AddLight(Vector3 pos, float radius, Vector4 color, int tNum) 
+        private void AddLight(Vector3 pos, float radius, Vector4 color, int tNum)
         {
             tNum *= 12;
             lights[tNum] = pos.X;
@@ -256,7 +263,7 @@ namespace Template
 
         private void CreateTriData()
         {
-            tries = new float[32*24];
+            tries = new float[32 * 24];
             //left wall
             AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 0);
             AddTri(new Vector3(-3.5f, -2f, 0), new Vector3(-3.5f, 2f, -4f), new Vector3(-3.5f, -2f, -4f), new Vector4(0.85f, 0.85f, 1f, 0f), 1);
@@ -295,7 +302,7 @@ namespace Template
 
         }
 
-        private void CreatePlayer2() 
+        private void CreatePlayer2()
         {
             int tNum = 20;
             //front

@@ -210,6 +210,15 @@ void main()
 					activ[2] = 1;
 					activ[10] = 0;
 				}
+				else 
+				{
+					for(int i=0;i<6;i++){
+						activ[i] = 0;
+					}
+					for(int i=8;i<14;i++){
+						activ[i] = 1;
+					}
+				}
 				light[b].direction = normalize(light[b].direction);
 				light[b].pos = vec4(0, 0, light[b].pos.z, light[b].pos.w);
 				return;
@@ -231,6 +240,15 @@ void main()
 				{
 					activ[5] = 1;
 					activ[13] = 0;
+				}
+				else 
+				{
+					for(int i=0;i<6;i++){
+						activ[i] = 0;
+					}
+					for(int i=8;i<14;i++){
+						activ[i] = 1;
+					}
 				}
 				light[b].direction = normalize(light[b].direction);
 				light[b].pos = vec4(0, 0, light[b].pos.z, light[b].pos.w);

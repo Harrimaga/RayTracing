@@ -1,4 +1,7 @@
 #version 430
+const int aa = 2;
+const int bounceLimit = 3;
+
 layout(std430, binding=0) buffer Pos{
     vec4 Color[];
 };
@@ -402,7 +405,6 @@ void GetColor(in int am, out vec4 col, in Ray primaryRay, out Ray refRay, out ve
 
 void main() 
 {
-	uint aa = 2;
 	ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
 	uint gWidth = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
 	uint gHeight = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
@@ -426,13 +428,14 @@ void main()
 			float atot = 1;
 			Color[offset] = vec4(0, 0, 0, 0);
 			float totdis = 0;
-			while(atot > 0 && am < 4) 
+			while(atot > 0 && am < bounceLimit+1) 
 			{
 				vec4 nc;
 				Ray r;
 				vec4 prev = hitColor;
 				GetColor(0, nc, primaryRay, primaryRay, hitColor, totdis);
-				Color[offset] += nc*atot*prev;
+				nc = clamp(nc, vec4(0, 0, 0, 0), vec4(1, 1, 1, 1));
+				Color[offset] += clamp(nc*atot*prev, vec4(0, 0, 0, 0), vec4(1, 1, 1, 1));
 				atot *= hitColor.w;
 				am++;
 			}
