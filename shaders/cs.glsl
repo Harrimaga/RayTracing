@@ -45,7 +45,7 @@ uniform vec3 screenDL;
 
 uniform writeonly image2D img;
 
-layout(std430, binding=1) readonly buffer spheres{
+layout(std430, binding=1) buffer spheres{
     Sphere sphere[];
 };
 
@@ -53,11 +53,11 @@ layout(std430, binding=2) buffer lights{
      Light light[];
 };
 
-layout(std430, binding=3) readonly buffer planes{
+layout(std430, binding=3) buffer planes{
 	Plane plane[];
 };
 
-layout(std430, binding=4) readonly buffer tries{
+layout(std430, binding=4) buffer tries{
 	Tri tri[];
 };
 
